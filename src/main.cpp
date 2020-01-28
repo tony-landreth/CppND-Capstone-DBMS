@@ -1,8 +1,14 @@
-#include <fstream>
-#include <iostream>
-#include <string>
+#include "FileScan.h"
 
 int main() {
-    std::cout << "Hello World!" << "\n";
-    return 0;
+  FileScan fs("movies");
+
+  std::string s = fs.next();
+
+  while(!s.empty()) {
+    std::cout << s << std::endl;
+    s = fs.next();
+  }
+
+  return 0;
 }
