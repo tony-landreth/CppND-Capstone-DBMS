@@ -9,5 +9,8 @@ class FileScanTest : public ::testing::Test {
 };
 
 TEST_F(FileScanTest, TestNext) {
-  EXPECT_EQ(fs.next(),"movieId,title,genres\r");
+  std::vector<std::string> row = fs.next();
+  EXPECT_EQ(row[0], "movieId");
+  EXPECT_EQ(row[1], "title");
+  EXPECT_EQ(row[2], "genres");
 }

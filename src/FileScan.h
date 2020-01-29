@@ -4,12 +4,14 @@
 #include<iostream>
 #include<sstream>
 #include<string>
+#include<vector>
+#include "PlanNode.h"
 
-class FileScan
+class FileScan : public PlanNode
 {
   public:
     FileScan(std::string tableName);
-    std::string next();
+    std::vector<std::string> next();
 
   private:
     std::ifstream fileStream_;
