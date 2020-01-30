@@ -1,6 +1,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 #include "../src/FileScan.h"
+#include "../src/Selection.h"
 
 class FileScanTest : public ::testing::Test {
   protected:
@@ -17,5 +18,21 @@ TEST_F(FileScanTest, TestNext) {
   row = fs.next();
   std::vector<std::string> expectProperCommaHandling{ "1","\"A Movie Title, With Commas, In the Title\"","Adventure|Animation|Children|Comedy|Fantasy" };
   EXPECT_EQ(expectProperCommaHandling, row);
+};
 
+class SelectionTest : public ::testing::Test {
+  protected:
+    FileScan fs{"test_data"};
+    std::vector<std::string> triple{"title", "EQUALS","The Fall"};
+    Selection select{triple, std::move( fs )};
+};
+
+TEST_F(SelectionTest, TestNext) {
+  // Advance to a row where title = "The Fall"
+  select.next();
+  select.next();
+  std::vector<std::string> row = select.next();
+
+  std::vector<std::string> theFallRow{ "2", "The Fall", "Adventure|Fantasy" };
+  EXPECT_EQ(row, theFallRow);
 }
