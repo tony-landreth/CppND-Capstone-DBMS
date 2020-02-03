@@ -1,6 +1,6 @@
 #include "Selection.h"
 
-Selection::Selection(std::vector<std::string> triple, FileScan fs) : triple_(triple), fs_(std::move(fs)) {}
+Selection::Selection(std::vector<std::string> triple, std::unique_ptr<FileScan> fs) : triple_(triple), fs_(std::move(fs)) {}
 
 std::vector<std::string> Selection::next()
 {
@@ -15,7 +15,7 @@ std::vector<std::string> Selection::next()
   std::string val = triple_[2];
 
   std::vector<std::string> row;
-  row = fs_.next();
+  row = fs_->next();
 
   if(op == "EQUALS") {
     int colNum = Schema[key];

@@ -22,7 +22,7 @@ TEST_F(FileScanTest, TestNext) {
 
 class SelectionTest : public ::testing::Test {
   protected:
-    FileScan fs{"test_data"};
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
     std::vector<std::string> triple{"title", "EQUALS","The Fall"};
     Selection select{triple, std::move( fs )};
 };
