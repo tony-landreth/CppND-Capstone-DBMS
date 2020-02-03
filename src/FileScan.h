@@ -5,13 +5,15 @@
 #include<sstream>
 #include<string>
 #include<vector>
+#include<map>
 #include "PlanNode.h"
 
 class FileScan : public PlanNode
 {
   public:
-    FileScan(std::string tableName);
+    FileScan(std::string tableName, std::map<std::string,int> schema);
     std::vector<std::string> next();
+    std::map<std::string,int> schema;
 
   private:
     std::ifstream fileStream_;

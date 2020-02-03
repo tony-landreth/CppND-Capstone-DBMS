@@ -2,11 +2,18 @@
 #include "gtest/gtest.h"
 #include "../src/FileScan.h"
 #include "../src/Selection.h"
+#include "../src/Projection.h"
 
 class FileScanTest : public ::testing::Test {
   protected:
+      std::map<std::string,int> schema = {
+        { "movieId", 0 },
+        { "title",   1 },
+        { "genres",  2 }
+      };
+
     //TODO: select a subset of movie.csv as test data
-    FileScan fs{"test_data"};
+    FileScan fs{"test_data", schema};
 };
 
 TEST_F(FileScanTest, TestNext) {
@@ -22,7 +29,13 @@ TEST_F(FileScanTest, TestNext) {
 
 class SelectionTest : public ::testing::Test {
   protected:
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+      std::map<std::string,int> schema = {
+        { "movieId", 0 },
+        { "title",   1 },
+        { "genres",  2 }
+      };
+
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data", schema);
     std::vector<std::string> triple{"title", "EQUALS","The Fall"};
     Selection select{triple, std::move( fs )};
 };
@@ -35,4 +48,27 @@ TEST_F(SelectionTest, TestNext) {
 
   std::vector<std::string> theFallRow{ "2", "The Fall", "Adventure|Fantasy" };
   EXPECT_EQ(row, theFallRow);
+}
+
+class ProjectionTest : public ::testing::Test {
+  protected:
+      std::map<std::string,int> schema = {
+        { "movieId", 0 },
+        { "title",   1 },
+        { "genres",  2 }
+      };
+
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data", schema);
+    std::vector<std::string> triple{"title", "EQUALS","The Fall"};
+    std::unique_ptr<Selection> select = std::make_unique<Selection>(triple, std::move( fs ));
+    Projection projection{"title", std::move( select )};
+};
+
+TEST_F(ProjectionTest, TestNext) {
+  // Advance to a row where title = "The Fall"
+  projection.next();
+  projection.next();
+  std::vector<std::string> row = projection.next();
+  std::vector<std::string> expectation{ "The Fall" };
+  EXPECT_EQ(row, expectation);
 }
