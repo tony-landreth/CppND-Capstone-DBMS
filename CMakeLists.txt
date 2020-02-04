@@ -1,10 +1,19 @@
 cmake_minimum_required(VERSION 3.7)
 
-add_definitions(-std=c++17)
+project(MildDBMS)
 
-set(CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread")
 
-project(HelloWorld)
+add_subdirectory(thirdparty/googletest)
 
-add_executable(HelloWorld src/main.cpp)
+# Find all executables
+file(GLOB project_SRCS src/*.cpp) #src/*.h
+
+
+# Add project executable
+add_executable(mildDBMS ${project_SRCS})
+
+
+add_executable(test test/utest_mildDBMS.cpp src/FileScan.cpp src/Selection.cpp src/Projection.cpp src/schema_loader.cpp)
+
+target_link_libraries(test gtest_main)
