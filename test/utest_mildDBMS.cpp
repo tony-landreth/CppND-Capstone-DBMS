@@ -3,16 +3,11 @@
 #include "../src/FileScan.h"
 #include "../src/Selection.h"
 #include "../src/Projection.h"
+#include "../src/schema_loader.h"
 
 class FileScanTest : public ::testing::Test {
   protected:
-      std::map<std::string,int> schema = {
-        { "movieId", 0 },
-        { "title",   1 },
-        { "genres",  2 }
-      };
-
-    //TODO: select a subset of movie.csv as test data
+    std::map<std::string,int> schema = schema_loader("movies");
     FileScan fs{"test_data", schema};
 };
 
@@ -29,12 +24,7 @@ TEST_F(FileScanTest, TestNext) {
 
 class SelectionTest : public ::testing::Test {
   protected:
-      std::map<std::string,int> schema = {
-        { "movieId", 0 },
-        { "title",   1 },
-        { "genres",  2 }
-      };
-
+    std::map<std::string,int> schema = schema_loader("movies");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data", schema);
     std::vector<std::string> triple{"title", "EQUALS","The Fall"};
     Selection select{triple, std::move( fs )};
@@ -52,12 +42,7 @@ TEST_F(SelectionTest, TestNext) {
 
 class ProjectionTest : public ::testing::Test {
   protected:
-      std::map<std::string,int> schema = {
-        { "movieId", 0 },
-        { "title",   1 },
-        { "genres",  2 }
-      };
-
+    std::map<std::string,int> schema = schema_loader("movies");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data", schema);
     std::vector<std::string> triple{"title", "EQUALS","The Fall"};
     std::unique_ptr<Selection> select = std::make_unique<Selection>(triple, std::move( fs ));
