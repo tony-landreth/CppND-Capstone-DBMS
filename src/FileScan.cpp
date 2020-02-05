@@ -1,17 +1,18 @@
 #include "FileScan.h"
 
-FileScan::FileScan(std::string tableName, std::map<std::string,int> schema)
+FileScan::FileScan(std::string tableName, std::map<std::string,int> schema) : tableName(tableName)
 {
-  std::ifstream fileStream;
   std::stringstream fileName;
   fileName << "../test/data/" << tableName << ".csv";
   fileStream_.open(fileName.str());
 }
 
-std::vector<std::string> FileScan::next() {
+std::vector<std::vector<std::string> > FileScan::next() {
   std::vector<std::string> cols;
   std::string row;
-  std::vector<std::string> result;
+  std::vector<std::string> result_row;
+  std::vector<std::vector<std::string> > result;
+
 
   if(fileStream_) {
     getline(fileStream_, row);
@@ -29,7 +30,7 @@ std::vector<std::string> FileScan::next() {
     // If the next element does not have a ", concat the previous concat with the next element
     std::string quoted_str;
     int size = cols.size();
-    std::vector<std::string> result;
+
 
     for(int i = 0; i < size; i++) {
       if(cols[i].find("\"") != std::string::npos) {
@@ -45,23 +46,24 @@ std::vector<std::string> FileScan::next() {
             i++;
           }
         }
-        result.push_back(quoted_str);
+        result_row.push_back(quoted_str);
       } else {
-        result.push_back(cols[i]);
+        result_row.push_back(cols[i]);
       }
     }
 
     // Remove \r from last entry in the row
-    std::string lastEntry = result.back();
+    std::string lastEntry = result_row.back();
     if(lastEntry.find("\r") != std::string::npos) {
-      int numCols = result.size() - 1;
+      int numCols = result_row.size() - 1;
       lastEntry.erase(lastEntry.size() - 1);
-      result[numCols] = lastEntry;
+      result_row[numCols] = lastEntry;
     }
 
+    result.push_back(result_row);
     return result;
   }
 
   //Return empty vector if there's no data
-  return cols;
+  return result;
 }
