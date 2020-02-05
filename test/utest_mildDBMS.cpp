@@ -67,23 +67,27 @@ TEST_F(ProjectionTest, TestNext) {
 
 class JoinTest : public ::testing::Test {
   protected:
-    std::map<std::string,int> movie_schema = schema_loader("movies");
-    std::map<std::string,int> ratings_schema = schema_loader("ratings");
-    std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("movies", movie_schema);
-    std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("ratings", ratings_schema);
-    std::vector<std::string> triple{"title", "EQUALS","The Fall"};
-    std::unique_ptr<Selection> mselect = std::make_unique<Selection>(triple, std::move( mfs ));
-    std::unique_ptr<Selection> rselect = std::make_unique<Selection>(triple, std::move( rfs ));
-    std::unique_ptr<Projection> mprojection = std::make_unique<Projection>("movieId", std::move( mselect ));
-    std::unique_ptr<Projection> rprojection = std::make_unique<Projection>("movieId", std::move( rselect ));
+  std::map<std::string,int> movie_schema = schema_loader("test_data");
+  std::map<std::string,int> ratings_schema = schema_loader("test_data");
+  std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data", movie_schema);
+  std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data", ratings_schema);
 
-    std::vector<std::string> keys{ "movieId", "movieId" };
-//    Join join{ std::move( m_projection ), std::move( r_projection ) };
-//    Join join{ std::move( mprojection ) };
+  std::vector<std::string> triple{"title", "EQUALS","The Fall"};
+  std::unique_ptr<Selection> mselect = std::make_unique<Selection>(triple, std::move( mfs ));
+  std::unique_ptr<Selection> rselect = std::make_unique<Selection>(triple, std::move( rfs ));
+
+  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>("title", std::move( mselect ));
+  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>("title", std::move( rselect ));
+
+  std::vector<std::string> keys{ "movieId", "movieId" };
+
 };
 
 TEST_F(JoinTest, TestNext) {
-    std::cout<<"m_projection is of type: "<<typeid(mprojection).name()<<std::endl;
-    std::cout<<"r_projection is of type: "<<typeid(rprojection).name()<<std::endl;
+  Join join( std::move( mprojection ), std::move( rprojection ), keys );
+  std::vector<std::vector<std::string> > result = join.next();
+  result = join.next();
+  std::vector<std::string> expectation{ "The Fall", "The Fall" };
+  EXPECT_EQ(result[0], expectation);
 }
 
