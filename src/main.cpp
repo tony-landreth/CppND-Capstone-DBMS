@@ -18,10 +18,10 @@ int main() {
 
   std::vector<std::string> keys{ "movieId", "movieId" };
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
-  join.next();
-  std::cout << "BEFORE\n";
-  join.next();
-  std::cout << "AFTER\n";
+  std::vector<std::vector<std::string> > result = join.next();
+  std::cout << "result " << result.size() << std::endl;
+  result = join.next();
+  std::cout << "result " << result.size() << std::endl;
 
   return 0;
 }

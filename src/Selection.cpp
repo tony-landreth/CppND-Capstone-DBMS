@@ -15,9 +15,6 @@ std::vector<std::vector<std::string> > Selection::next()
   std::vector<std::string> row;
   relation = fs->next();
 
-  std::cout << "BEFORE selection.cpp\n";
-  std::cout << "relation.size() " << relation.size() << std::endl;
-
   if(relation.size() == 0) {
     return result;
   } else {
@@ -29,7 +26,6 @@ std::vector<std::vector<std::string> > Selection::next()
     std::map<std::string, int> schema = schema_loader(tableName);
     int colNum = schema[key];
     std::string col = row[colNum];
-    std::cout << "AFTER selection.cpp\n";
 
     if(col == val) {
       result.push_back(row);

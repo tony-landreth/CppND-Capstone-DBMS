@@ -7,11 +7,9 @@ std::vector<std::vector<std::string> > Projection::next(){
   std::vector<std::vector<std::string> > result;
   std::vector<std::vector<std::string> > relation = sel_->next();
 
-  std::cout << "BEFORE\n";
   if(relation.size() == 0) {
     return result;
   }
-  std::cout << "AFTER\n";
   std::vector<std::string> row = relation[0];
 
   std::vector<std::string> col_vals;
