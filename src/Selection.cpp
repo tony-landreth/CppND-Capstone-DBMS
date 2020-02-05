@@ -25,6 +25,11 @@ std::vector<std::vector<std::string> > Selection::next()
     std::string tableName = fs->tableName;
     std::map<std::string, int> schema = schema_loader(tableName);
     int colNum = schema[key];
+
+    // Return when the row contains only the empty string
+    if(( row.size() <= 1 ) && (row[0].empty()))
+      return result;
+
     std::string col = row[colNum];
 
     if(col == val) {

@@ -3,7 +3,6 @@
 #include "schema_loader.h"
 
 Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k) : r_(std::move( r )), s_(std::move( s )), keys_(k) {
-  std::cout << "YOU INITIALIZED A JOIN!" << std::endl;
 }
 
 std::vector<std::vector<std::string> > Join::next() {
@@ -26,31 +25,25 @@ std::vector<std::vector<std::string> > Join::next() {
   std::string s_col;
 
   if(r_relation.size() > 0) {
-    std::cout << "R is big enough" << std::endl;
     r_relation = r_->next();
     r_col = r_row[r_colID];
-    std::cout << "r_col: " << r_col << std::endl;
   }
 
   //  Once you roll r to the point where you've got a record that fits the where clause
   //  You then need to start rolling s
   if(r_col.size() > 0) {
     while( true ) {
-      std::cout << "SCANNING TABLE" << std::endl;
       s_relation = s_->next();
-      std::cout << "S RELATION SIZE " << s_relation.size() << std::endl;
 
       if(s_relation.size() == 0) {
-        std::cout << "BREAK!" << std::endl;
         break;
       }
 
       std::vector<std::string> s_row = s_relation[0];
-
-      std::cout << "r_col " << r_col << " s_col " << s_col << std::endl;
+      if(s_row.size() > 0)
+        s_col = s_row[s_colID];
 
       if(r_col == s_col) {
-        std::cout << "r_col == s_col " << (r_col == s_col) << std::endl;
         std::vector<std::string> result_row;
         std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
         std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));

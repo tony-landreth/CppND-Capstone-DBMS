@@ -19,9 +19,11 @@ int main() {
   std::vector<std::string> keys{ "movieId", "movieId" };
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
   std::vector<std::vector<std::string> > result = join.next();
-  std::cout << "result " << result.size() << std::endl;
   result = join.next();
-  std::cout << "result " << result.size() << std::endl;
+
+  // You should have two rows of The Fall and no other matches because of your Selection triple
+  if(result[0][0] == result[0][1])
+    std::cout << "You have two matches for The Fall\n";
 
   return 0;
 }
