@@ -7,11 +7,11 @@
 class Projection : PlanNode
 {
   public:
-    Projection(const std::string column_name, const std::unique_ptr<Selection> sel);
+    Projection(const std::vector<std::string> column_names, const std::unique_ptr<Selection> sel);
     std::vector<std::vector<std::string> > next();
 
   private:
-    std::string column_name_;
+    std::vector<std::string> column_names_;
     std::unique_ptr<Selection> sel_;
 };
 

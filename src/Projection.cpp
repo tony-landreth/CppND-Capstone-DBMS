@@ -1,7 +1,7 @@
 #include "Projection.h"
 #include "schema_loader.h"
 
-Projection::Projection(std::string column_name, std::unique_ptr<Selection> sel) : column_name_(column_name), sel_(std::move( sel )) {}
+Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<Selection> sel) : column_names_(column_names), sel_(std::move( sel )) {}
 
 std::vector<std::vector<std::string> > Projection::next(){
   std::vector<std::vector<std::string> > result;
@@ -13,18 +13,21 @@ std::vector<std::vector<std::string> > Projection::next(){
   std::vector<std::string> row = relation[0];
 
   std::vector<std::string> col_vals;
-  //TODO: Make it possible to pass an argument into the schema_loader
+  //TODO: Pull schema name off of FileScan
   std::map<std::string,int> schema = schema_loader("test_data");
-  int rowID = schema[column_name_];
+  for(int i = 0; i < column_names_.size(); i++) {
 
+    std::string column_name = column_names_[i];
+    int rowID = schema[column_name];
 
-  if(row.size() != 0) {
-    col_vals.push_back(row[rowID]);
-  } else {
-    col_vals.push_back("");
+    if(row.size() != 0) {
+      col_vals.push_back(row[rowID]);
+    } else {
+      col_vals.push_back("");
+    }
+
+    result.push_back(col_vals);
+
   }
-
-  result.push_back(col_vals);
-
   return result;
 }

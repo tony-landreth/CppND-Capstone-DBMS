@@ -52,7 +52,8 @@ class ProjectionTest : public ::testing::Test {
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data", schema);
     std::vector<std::string> triple{"title", "EQUALS","The Fall"};
     std::unique_ptr<Selection> select = std::make_unique<Selection>(triple, std::move( fs ));
-    Projection projection{"title", std::move( select )};
+    std::vector<std::string> col_names{ "title" };
+    Projection projection{col_names, std::move( select )};
 };
 
 TEST_F(ProjectionTest, TestNext) {
@@ -76,8 +77,9 @@ class JoinTest : public ::testing::Test {
   std::unique_ptr<Selection> mselect = std::make_unique<Selection>(triple, std::move( mfs ));
   std::unique_ptr<Selection> rselect = std::make_unique<Selection>(triple, std::move( rfs ));
 
-  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>("title", std::move( mselect ));
-  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>("title", std::move( rselect ));
+  std::vector<std::string> col_names{ "title" };
+  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ));
+  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ));
 
   std::vector<std::string> keys{ "movieId", "movieId" };
 

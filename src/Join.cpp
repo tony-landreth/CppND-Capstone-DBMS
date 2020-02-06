@@ -48,7 +48,6 @@ std::vector<std::vector<std::string> > Join::next() {
         std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
         std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));
 
-        //TODO: you need to be returning vectors of vectors of strings
         result.push_back(result_row);
       }
     }
