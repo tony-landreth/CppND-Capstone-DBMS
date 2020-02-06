@@ -19,7 +19,7 @@ Movie data from GroupLens Research is used to demonstrate the system's functiona
 
 ## Basic Build Instructions
 
-1. Clone this repo.
+1. Clone this repo, including the test submodule, like this: git clone --recurse-submodules https://github.com/tony-landreth/CppND-Capstone-DBMS.git
 2. Make a build directory in the top level directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
 4. Run it: `./mildDBMS`.
@@ -30,3 +30,4 @@ The testing executable is also placed in the `build` directory. From within `bui
 ```
 ./test
 ```
+NOTE: The test suite requires that you've installed the testing submodule. See Basic Build Instructions.
