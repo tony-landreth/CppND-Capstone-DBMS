@@ -3,7 +3,7 @@
 FileScan::FileScan(std::string tableName, std::map<std::string,int> schema) : tableName(tableName)
 {
   std::stringstream fileName;
-  fileName << "../test/data/" << tableName << ".csv";
+  fileName << "../test/" << tableName << ".csv";
   fileStream_.open(fileName.str());
 }
 
