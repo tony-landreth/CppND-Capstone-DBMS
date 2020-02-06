@@ -1,6 +1,6 @@
 #include "FileScan.h"
 
-FileScan::FileScan(std::string tableName, std::map<std::string,int> schema) : tableName(tableName)
+FileScan::FileScan(std::string tableName) : tableName(tableName)
 {
   std::stringstream fileName;
   fileName << "../test/" << tableName << ".csv";

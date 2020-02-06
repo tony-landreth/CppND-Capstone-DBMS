@@ -8,8 +8,7 @@
 
 class FileScanTest : public ::testing::Test {
   protected:
-    std::map<std::string,int> schema = schema_loader("movies");
-    FileScan fs{"test_data", schema};
+    FileScan fs{"test_data"};
 };
 
 TEST_F(FileScanTest, TestNext) {
@@ -27,8 +26,7 @@ TEST_F(FileScanTest, TestNext) {
 
 class SelectionTest : public ::testing::Test {
   protected:
-    std::map<std::string,int> schema = schema_loader("test_data");
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data", schema);
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
     std::vector<std::string> triple{"title", "EQUALS","The Fall"};
     Selection select{triple, std::move( fs )};
 };
@@ -49,7 +47,7 @@ TEST_F(SelectionTest, TestNext) {
 class ProjectionTest : public ::testing::Test {
   protected:
     std::map<std::string,int> schema = schema_loader("movies");
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data", schema);
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
     std::vector<std::string> triple{"title", "EQUALS","The Fall"};
     std::unique_ptr<Selection> select = std::make_unique<Selection>(triple, std::move( fs ));
     std::vector<std::string> col_names{ "title" };
@@ -68,10 +66,8 @@ TEST_F(ProjectionTest, TestNext) {
 
 class JoinTest : public ::testing::Test {
   protected:
-  std::map<std::string,int> movie_schema = schema_loader("test_data");
-  std::map<std::string,int> ratings_schema = schema_loader("test_data");
-  std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data", movie_schema);
-  std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data", ratings_schema);
+  std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data");
+  std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data");
 
   std::vector<std::string> triple{"title", "EQUALS","The Fall"};
   std::unique_ptr<Selection> mselect = std::make_unique<Selection>(triple, std::move( mfs ));
