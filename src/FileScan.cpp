@@ -25,7 +25,6 @@ std::vector<std::vector<std::string> > FileScan::next() {
       cols.push_back( substr );
     }
 
-    // TODO: Merge on quotation marks
     // If an element has ", concat it with the next element
     // If the next element does not have a ", concat the previous concat with the next element
     std::string quoted_str;

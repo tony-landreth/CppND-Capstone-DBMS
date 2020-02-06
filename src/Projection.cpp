@@ -13,8 +13,8 @@ std::vector<std::vector<std::string> > Projection::next(){
   std::vector<std::string> row = relation[0];
 
   std::vector<std::string> col_vals;
-  //TODO: Pull schema name off of FileScan
-  std::map<std::string,int> schema = schema_loader("test_data");
+  tableName = sel_->tableName;
+  std::map<std::string,int> schema = schema_loader(tableName);
   for(int i = 0; i < column_names_.size(); i++) {
 
     std::string column_name = column_names_[i];

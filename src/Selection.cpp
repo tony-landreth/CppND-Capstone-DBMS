@@ -5,6 +5,7 @@ Selection::Selection(std::vector<std::string> triple, std::unique_ptr<FileScan> 
 
 std::vector<std::vector<std::string> > Selection::next()
 {
+  tableName = fs->tableName;
   std::vector<std::vector<std::string> > result;
   std::string key = triple_[0];
   std::string op = triple_[1];
@@ -22,7 +23,6 @@ std::vector<std::vector<std::string> > Selection::next()
   }
 
   if(op == "EQUALS") {
-    std::string tableName = fs->tableName;
     std::map<std::string, int> schema = schema_loader(tableName);
     int colNum = schema[key];
 

@@ -10,10 +10,11 @@ std::vector<std::vector<std::string> > Join::next() {
   std::string r_key = keys_[0];
   std::string s_key = keys_[1];
 
-  std::map<std::string, int> r_schema = schema_loader("test_data");
-  std::map<std::string, int> s_schema = schema_loader("test_data");
+  std::string r_table_name = r_->tableName;
+  std::string s_table_name = s_->tableName;
+  std::map<std::string, int> r_schema = schema_loader(r_table_name);
+  std::map<std::string, int> s_schema = schema_loader(s_table_name);
 
-  //TODO: To avoid confusion, make it so FileScan slices header row off
   std::vector<std::vector<std::string> > s_relation = s_->next();
   std::vector<std::vector<std::string> > r_relation = r_->next();
   std::vector<std::string> r_row = r_relation[0];
