@@ -40,6 +40,10 @@ std::vector<std::vector<std::string> > Selection::next()
     }
   }
 
+  if(op == "*") {
+    result.push_back(row);
+  }
+
   //TODO: v2 call return fn_ on row, implementing basic map
   return result;
 }

@@ -92,7 +92,13 @@ class QueryPlannerTest : public ::testing::Test {
 };
 
 TEST_F(QueryPlannerTest, Run) {
-  std::vector<std::string> arguments = {"./mildDBMS", "\"SELECT * FROM movies;\""};
+  std::vector<std::vector<std::string> > expectedResult{ 
+    { "movieId", "title", "genres" },
+    { "1", "A Movie Title, With Commas, In the Title", "Adventure|Animation|Children|Comedy|Fantasy" },
+    { "2", "The Fall", "Adventure|Fantasy" },
+    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" } 
+  };
+  std::vector<std::string> arguments = {"./mildDBMS", "\"SELECT * FROM test_data;\""};
 
   std::vector<char*> argv;
   for (const auto& arg : arguments)
@@ -100,5 +106,6 @@ TEST_F(QueryPlannerTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  qp.run();
+  std::vector<std::vector<std::string> > result = qp.run();
+  EXPECT_EQ(result, expectedResult);
 }

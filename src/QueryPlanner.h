@@ -9,11 +9,13 @@
 class QueryPlanner{
   public:
     QueryPlanner(int argc, char** argv);
-    void run();
+    std::vector<std::vector<std::string> > run();
 
   private:
     char** argv_;
     int argc_;
+
+    std::vector<std::string> tokenize();
 };
 
 #endif
