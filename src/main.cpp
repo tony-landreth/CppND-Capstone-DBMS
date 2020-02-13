@@ -4,11 +4,17 @@
 #include "Join.h"
 #include <sstream> 
 
+//TODO: Implement Rule of Five for something
+//TODO: Use a Template Function for something
+//TODO: Use concurrency to read entire tables into memory before running JOIN
+
+
 //TODO: Enable Select to take * as input
 //TODO: Create an abstraction for the code below
 
 int main(int argc, char** argv) {
   // First query is: "SELECT * FROM movies"
+  // Like this: ./mildDBMS "SELECT * FROM movies;"
   std::string arg;
   std::istringstream tkn_stream(argv[1]);
   std::vector<std::string> tkns;
@@ -16,7 +22,6 @@ int main(int argc, char** argv) {
 
   std::vector<std::string> selectors;
   std::vector<std::string> tableNames;
-
 
   // Split argv on whitespace
   while (tkn_stream >> tmp) {

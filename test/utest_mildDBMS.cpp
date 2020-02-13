@@ -4,6 +4,7 @@
 #include "../src/Selection.h"
 #include "../src/Projection.h"
 #include "../src/Join.h"
+#include "../src/QueryPlanner.h"
 #include "../src/schema_loader.h"
 
 class FileScanTest : public ::testing::Test {
@@ -33,9 +34,7 @@ class SelectionTest : public ::testing::Test {
 
 TEST_F(SelectionTest, TestNext) {
   // Advance to a row where title = "The Fall"
-  std::cout << "BEFORE utest\n";
   select.next();
-  std::cout << "AFTER utest\n";
   select.next();
   std::vector<std::vector<std::string> > relation = select.next();
   std::vector<std::string> row = relation[0];
@@ -89,3 +88,17 @@ TEST_F(JoinTest, TestNext) {
   EXPECT_EQ(result[0], expectation);
 }
 
+class QueryPlannerTest : public ::testing::Test {
+};
+
+TEST_F(QueryPlannerTest, Run) {
+  std::vector<std::string> arguments = {"./mildDBMS", "\"SELECT * FROM movies;\""};
+
+  std::vector<char*> argv;
+  for (const auto& arg : arguments)
+      argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  qp.run();
+}
