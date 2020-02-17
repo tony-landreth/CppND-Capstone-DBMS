@@ -4,6 +4,7 @@
 #include <algorithm>
 
 QueryPlanner::QueryPlanner(int argc, char** argv) : argc_(argc), argv_(argv) {};
+
 std::vector<std::string> QueryPlanner::tokenize()
 {
   std::string arg;
@@ -68,6 +69,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::vector<std::string> query = tokenize();
   std::string tableName = query.back();
   std::string chars = ";\"";
+
 
   for(char c: chars) {
     tableName.erase(std::remove(tableName.begin(), tableName.end(), c), tableName.end());
