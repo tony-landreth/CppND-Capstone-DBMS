@@ -31,8 +31,8 @@ TEST_F(FileScanTest, TestNext) {
 class SelectionTest : public ::testing::Test {
   protected:
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
-    std::vector<std::string> triple{"title", "EQUALS","The Fall"};
-    Selection select{triple, std::move( fs )};
+    std::vector<std::string> where{"title", "EQUALS","The Fall"};
+    Selection select{ where, std::move( fs )};
 };
 
 TEST_F(SelectionTest, TestNext) {
@@ -48,8 +48,8 @@ TEST_F(SelectionTest, TestNext) {
 class StarTest : public ::testing::Test {
   protected:
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
-    std::vector<std::string> triple{"*", "*","*"};
-    Selection select{triple, std::move( fs )};
+    std::vector<std::string> where{"*", "*","*"};
+    Selection select{ where, std::move( fs )};
 };
 
 TEST_F(StarTest, TestSelectStarNext) {
@@ -77,8 +77,8 @@ class ProjectionTest : public ::testing::Test {
   protected:
     std::map<std::string,int> schema = schema_loader("movies");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
-    std::vector<std::string> triple{"title", "EQUALS","The Fall"};
-    std::unique_ptr<Selection> select = std::make_unique<Selection>(triple, std::move( fs ));
+    std::vector<std::string> where{"title", "EQUALS","The Fall"};
+    std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ));
     std::vector<std::string> col_names{ "title" };
     Projection projection{col_names, std::move( select )};
 };
@@ -99,9 +99,9 @@ class JoinTest : public ::testing::Test {
   std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data");
   std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data");
 
-  std::vector<std::string> triple{"title", "EQUALS","The Fall"};
-  std::unique_ptr<Selection> mselect = std::make_unique<Selection>(triple, std::move( mfs ));
-  std::unique_ptr<Selection> rselect = std::make_unique<Selection>(triple, std::move( rfs ));
+  std::vector<std::string> where{"title", "EQUALS","The Fall"};
+  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ));
+  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ));
 
   std::vector<std::string> col_names{ "title" };
   std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ));

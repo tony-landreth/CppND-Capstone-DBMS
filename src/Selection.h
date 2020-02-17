@@ -13,7 +13,7 @@ class Selection : PlanNode
     std::string tableName;
 
   private:
-    std::vector<std::string> triple_;
+    std::vector<std::string> where_;
 };
 
 #endif

@@ -1,14 +1,14 @@
 #include "Selection.h"
 #include "schema_loader.h"
 
-Selection::Selection(std::vector<std::string> triple, std::unique_ptr<FileScan> fs) : triple_(triple), fs(std::move(fs)) {}
+Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs) : where_(where), fs(std::move(fs)) {}
 
 std::vector<std::string> Selection::next()
 {
   tableName = fs->tableName;
-  std::string key = triple_[0];
-  std::string op = triple_[1];
-  std::string val = triple_[2];
+  std::string key = where_[0]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
+  std::string op = where_[1];  // is either * or EQUAL for the time being
+  std::string val = where_[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
   std::vector<std::string> empty_row;
   std::vector<std::string> row;
