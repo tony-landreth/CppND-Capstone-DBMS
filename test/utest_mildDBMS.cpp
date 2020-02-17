@@ -7,6 +7,9 @@
 #include "../src/QueryPlanner.h"
 #include "../src/schema_loader.h"
 
+
+// Tests for FileScanTest
+
 class FileScanTest : public ::testing::Test {
   protected:
     FileScan fs{"test_data"};
@@ -22,6 +25,9 @@ TEST_F(FileScanTest, TestNext) {
   std::vector<std::string> expectProperCommaHandling{ "1","\"A Movie Title, With Commas, In the Title\"","Adventure|Animation|Children|Comedy|Fantasy" };
   EXPECT_EQ(expectProperCommaHandling, row);
 };
+
+// Tests for SELECT
+
 
 class SelectionTest : public ::testing::Test {
   protected:
@@ -39,6 +45,34 @@ TEST_F(SelectionTest, TestNext) {
   std::vector<std::string> theFallRow{ "2", "The Fall", "Adventure|Fantasy" };
   EXPECT_EQ(row, theFallRow);
 }
+
+class StarTest : public ::testing::Test {
+  protected:
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+    std::vector<std::string> triple{"*", "*","*"};
+    Selection select{triple, std::move( fs )};
+};
+
+TEST_F(StarTest, TestSelectStarNext) {
+  std::vector<std::vector<std::string> > expectedResult{ 
+    { "movieId", "title", "genres" },
+    { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
+    { "2", "The Fall", "Adventure|Fantasy" },
+    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" }
+  };
+
+  std::vector<std::vector<std::string> > results;
+  std::vector<std::string> row = select.next();
+
+  while(row[0].size() > 0) {
+    results.push_back(row);
+    row = select.next();
+  }
+
+  EXPECT_EQ(results, expectedResult);
+}
+
+// Tests for Projection
 
 class ProjectionTest : public ::testing::Test {
   protected:
@@ -58,6 +92,8 @@ TEST_F(ProjectionTest, TestNext) {
   std::vector<std::string> expectation{ "The Fall" };
   EXPECT_EQ(row, expectation);
 }
+
+// Tests for Join
 
 class JoinTest : public ::testing::Test {
   protected:
@@ -84,6 +120,9 @@ TEST_F(JoinTest, TestNext) {
   std::vector<std::string> expectation{ "The Fall", "The Fall" };
   EXPECT_EQ(result, expectation);
 }
+
+
+// Tests for QueryPlanner
 
 class QueryPlannerTest : public ::testing::Test {
 };
