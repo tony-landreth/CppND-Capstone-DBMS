@@ -37,7 +37,6 @@ std::vector<std::string> QueryPlanner::tokenize()
           break;
 
         tkn = tkns[i];
-        // TODO: Implement handling for * in SELECT node
       }
 
       // Roll past FROM token
@@ -77,11 +76,15 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(tableName);
   std::vector<std::string> triple{ "*", "*", "*" };
   Selection sel(triple, std::move(fs));
-  results.push_back(sel.next());
-  results.push_back(sel.next());
-  results.push_back(sel.next());
-  results.push_back(sel.next());
-  results.push_back(sel.next());
+  
+  std::vector<std::string> row = sel.next();
+
+  while(row.size() > 0) {
+    if(row[0].size() > 0)
+      results.push_back(row);
+
+    row = sel.next();
+  }
 
   int i = 0;
   int j = 0;
@@ -91,7 +94,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::cout << "i: " << i << std::endl;
     while(j < results[i].size()) {
       while(k < results[i][j].size()) {
-        std::cout << "results" << results[i][j][k] << std::endl;
         k++;
       }
     j++;

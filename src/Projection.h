@@ -8,7 +8,7 @@ class Projection : PlanNode
 {
   public:
     Projection(const std::vector<std::string> column_names, const std::unique_ptr<Selection> sel);
-    std::vector<std::vector<std::string> > next();
+    std::vector<std::string> next();
     std::string tableName;
 
   private:

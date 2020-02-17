@@ -5,7 +5,7 @@
 class PlanNode
 {
   public:
-    virtual std::vector<std::vector<std::string> > next() = 0;
+    virtual std::vector<std::string> next() = 0;
 };
 
 #endif

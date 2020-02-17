@@ -11,7 +11,7 @@ class Join : public PlanNode
 {
   public:
     Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> keys);
-    std::vector<std::vector<std::string> > next();
+    std::vector<std::string> next();
 
   private:
     std::unique_ptr<Projection> r_;

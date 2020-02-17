@@ -13,14 +13,12 @@ class FileScanTest : public ::testing::Test {
 };
 
 TEST_F(FileScanTest, TestNext) {
-  std::vector<std::vector<std::string> > relation = fs.next();
-  std::vector<std::string> row = relation[0];
+  std::vector<std::string> row = fs.next();
   EXPECT_EQ(row[0], "movieId");
   EXPECT_EQ(row[1], "title");
   EXPECT_EQ(row[2], "genres");
   
-  relation = fs.next();
-  row = relation[0];
+  row = fs.next();
   std::vector<std::string> expectProperCommaHandling{ "1","\"A Movie Title, With Commas, In the Title\"","Adventure|Animation|Children|Comedy|Fantasy" };
   EXPECT_EQ(expectProperCommaHandling, row);
 };
@@ -36,8 +34,7 @@ TEST_F(SelectionTest, TestNext) {
   // Advance to a row where title = "The Fall"
   select.next();
   select.next();
-  std::vector<std::vector<std::string> > relation = select.next();
-  std::vector<std::string> row = relation[0];
+  std::vector<std::string> row = select.next();
 
   std::vector<std::string> theFallRow{ "2", "The Fall", "Adventure|Fantasy" };
   EXPECT_EQ(row, theFallRow);
@@ -57,8 +54,7 @@ TEST_F(ProjectionTest, TestNext) {
   // Advance to a row where title = "The Fall"
   projection.next();
   projection.next();
-  std::vector<std::vector<std::string> > relation = projection.next();
-  std::vector<std::string> row = relation[0];
+  std::vector<std::string> row = projection.next();
   std::vector<std::string> expectation{ "The Fall" };
   EXPECT_EQ(row, expectation);
 }
@@ -82,19 +78,19 @@ class JoinTest : public ::testing::Test {
 
 TEST_F(JoinTest, TestNext) {
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
-  std::vector<std::vector<std::string> > result = join.next();
+  std::vector<std::string> result = join.next();
+  join.next();
   result = join.next();
   std::vector<std::string> expectation{ "The Fall", "The Fall" };
-  EXPECT_EQ(result[0], expectation);
+  EXPECT_EQ(result, expectation);
 }
 
 class QueryPlannerTest : public ::testing::Test {
 };
-
 TEST_F(QueryPlannerTest, Run) {
   std::vector<std::vector<std::string> > expectedResult{ 
     { "movieId", "title", "genres" },
-    { "1", "A Movie Title, With Commas, In the Title", "Adventure|Animation|Children|Comedy|Fantasy" },
+    { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
     { "2", "The Fall", "Adventure|Fantasy" },
     { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" } 
   };
@@ -109,3 +105,4 @@ TEST_F(QueryPlannerTest, Run) {
   std::vector<std::vector<std::string> > result = qp.run();
   EXPECT_EQ(result, expectedResult);
 }
+

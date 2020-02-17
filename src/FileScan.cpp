@@ -7,11 +7,11 @@ FileScan::FileScan(std::string tableName) : tableName(tableName)
   fileStream_.open(fileName.str());
 }
 
-std::vector<std::vector<std::string> > FileScan::next() {
+std::vector<std::string> FileScan::next() {
   std::vector<std::string> cols;
   std::string row;
   std::vector<std::string> result_row;
-  std::vector<std::vector<std::string> > result;
+  std::vector<std::string> result;
 
 
   if(fileStream_) {
@@ -59,8 +59,7 @@ std::vector<std::vector<std::string> > FileScan::next() {
       result_row[numCols] = lastEntry;
     }
 
-    result.push_back(result_row);
-    return result;
+    return result_row;
   }
 
   //Return empty vector if there's no data
