@@ -1,6 +1,7 @@
 #include "QueryPlanner.h"
 #include "FileScan.h"
 #include "Selection.h"
+#include "Projection.h"
 #include <algorithm>
 
 QueryPlanner::QueryPlanner(int argc, char** argv) : argc_(argc), argv_(argv) {};
@@ -56,10 +57,6 @@ std::vector<std::string> QueryPlanner::tokenize()
     }
   }
 
-  for(int i = 0; i < tkns.size(); i++) {
-    std::cout << tkns[i] << std::endl;
-  }
-
   return tkns;
 };
 
@@ -76,24 +73,43 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(tableName);
-  std::vector<std::string> triple{ "*", "*", "*" };
-  Selection sel(triple, std::move(fs));
-  
-  std::vector<std::string> row = sel.next();
 
-  while(row.size() > 0) {
-    if(row[0].size() > 0)
-      results.push_back(row);
+  if(query[1] == "*") {
+    std::vector<std::string> triple{ query[0], query[1], query[2] };
+    Selection sel(triple, std::move(fs));
+    std::vector<std::string> row = sel.next();
 
-    row = sel.next();
+    while(row.size() > 0) {
+      if(row[0].size() > 0)
+        results.push_back(row);
+
+      row = sel.next();
+    }
+  } else {
+    // If SELECT includes a col name, draw rows from a projection
+    // TODO: Allow for Projection to take a vector of col names
+    std::vector<std::string> triple{ query[0], "*", query[2] };
+    std::unique_ptr<Selection> sel = std::make_unique<Selection>(triple, std::move(fs));
+    std::vector<std::string> col_names{ query[1] };
+    Projection proj(col_names, std::move(sel));
+
+    std::vector<std::string> row = proj.next();
+
+    while(row.size() > 0) {
+      if(row[0].size() > 0)
+        results.push_back(row);
+
+      row = proj.next();
+    }
   }
+  
 
   int i = 0;
   int j = 0;
   int k = 0;
 
+  // Build return relation
   while(i < results.size()) {
-    std::cout << "i: " << i << std::endl;
     while(j < results[i].size()) {
       while(k < results[i][j].size()) {
         k++;

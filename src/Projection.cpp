@@ -5,29 +5,22 @@ Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<Se
 
 std::vector<std::string> Projection::next(){
   std::vector<std::string> result;
-  std::vector<std::string> relation = sel_->next();
+  std::vector<std::string> row = sel_->next();
 
-  if(relation.size() == 0) {
+  if(row.size() == 0)
     return result;
-  }
-  std::vector<std::string> row = relation;
 
-  std::vector<std::string> col_vals;
+  if(row[0].size() == 0)
+    return result;
+
   tableName = sel_->tableName;
   std::map<std::string,int> schema = schema_loader(tableName);
-  for(int i = 0; i < column_names_.size(); i++) {
 
+  for(int i = 0; i < column_names_.size(); i++) {
     std::string column_name = column_names_[i];
     int rowID = schema[column_name];
-
-    if(row.size() != 0) {
-      col_vals.push_back(row[rowID]);
-    } else {
-      col_vals.push_back("");
-    }
-
-    return col_vals;
-
+    result.push_back(row[rowID]);
   }
+
   return result;
 }
