@@ -27,7 +27,6 @@ TEST_F(FileScanTest, TestNext) {
 
 // Tests for SELECT
 
-
 class SelectionTest : public ::testing::Test {
   protected:
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
@@ -63,7 +62,7 @@ TEST_F(StarTest, TestSelectStarNext) {
   std::vector<std::vector<std::string> > results;
   std::vector<std::string> row = select.next();
 
-  while(row[0].size() > 0) {
+  while(row.size() > 0) {
     results.push_back(row);
     row = select.next();
   }
@@ -72,7 +71,6 @@ TEST_F(StarTest, TestSelectStarNext) {
 }
 
 // Tests for Projection
-
 class ProjectionTest : public ::testing::Test {
   protected:
     std::map<std::string,int> schema = schema_loader("movies");
@@ -170,7 +168,6 @@ TEST_F(QueryWithProjectionTest, Run) {
 
   EXPECT_EQ(result, expectedResult);
 }
-
 /*
 class ComplexQueryTest : public ::testing::Test {
   protected:

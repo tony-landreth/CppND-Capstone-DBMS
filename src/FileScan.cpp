@@ -2,66 +2,50 @@
 
 FileScan::FileScan(std::string tableName) : tableName(tableName)
 {
+  scanFile(tableName);
+}
+
+
+void FileScan::scanFile(std::string tableName) {
   std::stringstream fileName;
   fileName << "../test/" << tableName << ".csv";
   fileStream_.open(fileName.str());
-  std::cout << "File Opened" << std::endl;
-}
 
-FileScan::~FileScan()
-{
-  std::cout << "File Closed" << std::endl;
+  if(!fileStream_) {
+    std::cerr << "No table named " << tableName << std::endl;
+    exit(1);
+  }
+
+  std::vector<std::string> row;
+  row = next_();
+
+  while(row.size() > 0) {
+    relation_.push_back(row);
+    row = next_();
+  }
+
   fileStream_.close();
-}
 
-FileScan::FileScan(const FileScan &source)
-{
-  std::stringstream fileName;
-  fileName << "../test/" << source.tableName << ".csv";
-  fileStream_.open(fileName.str());
-  std::cout << "COPYING content of FileScan instance " << &source << " to instance " << this << std::endl;
-}
-
-
-FileScan &FileScan::operator=(const FileScan &source)
-{
-  std::cout << "FileScan Copy Assignment Operator" << std::endl;
-
-  if (this == &source) {
-    return *this;
-  }
-
-  std::stringstream fileName;
-  fileName << "../test/" << source.tableName << ".csv";
-  fileStream_.open(fileName.str());
-
-  return *this;
-}
-
-FileScan::FileScan(FileScan &&source)
-{
-  std::cout << "FileScan Move Assignment Operator" << std::endl;
-}
-
-FileScan &FileScan::operator=(const FileScan &&source)
-{
-  if (this == &source) {
-    return *this;
-  }
-
-  std::stringstream fileName;
-  fileName << "../test/" << source.tableName << ".csv";
-  fileStream_.open(fileName.str());
-
-  return *this;
+  idx_for_next_ = 0;
 }
 
 std::vector<std::string> FileScan::next() {
+  std::vector<std::string> empty_vector;
+  std::vector<std::string> row = relation_[idx_for_next_];
+  idx_for_next_++;
+
+  if(idx_for_next_ >= relation_.size()) {
+    return empty_vector;
+  }
+
+  return row;
+}
+
+std::vector<std::string> FileScan::next_() {
   std::vector<std::string> cols;
   std::string row;
   std::vector<std::string> result_row;
   std::vector<std::string> result;
-
 
   if(fileStream_) {
     getline(fileStream_, row);

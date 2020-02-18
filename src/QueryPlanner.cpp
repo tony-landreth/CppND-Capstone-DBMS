@@ -75,8 +75,8 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(tableName);
 
   if(query[1] == "*") {
-    std::vector<std::string> triple{ query[0], query[1], query[2] };
-    Selection sel(triple, std::move(fs));
+    std::vector<std::string> where{ query[0], query[1], query[2] };
+    Selection sel(where, std::move(fs));
     std::vector<std::string> row = sel.next();
 
     while(row.size() > 0) {
@@ -88,8 +88,8 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   } else {
     // If SELECT includes a col name, draw rows from a projection
     // TODO: Allow for Projection to take a vector of col names
-    std::vector<std::string> triple{ query[0], "*", query[2] };
-    std::unique_ptr<Selection> sel = std::make_unique<Selection>(triple, std::move(fs));
+    std::vector<std::string> where{ query[0], "*", query[2] };
+    std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(fs));
     std::vector<std::string> col_names{ query[1] };
     Projection proj(col_names, std::move(sel));
 
