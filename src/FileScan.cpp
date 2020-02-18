@@ -5,6 +5,55 @@ FileScan::FileScan(std::string tableName) : tableName(tableName)
   std::stringstream fileName;
   fileName << "../test/" << tableName << ".csv";
   fileStream_.open(fileName.str());
+  std::cout << "File Opened" << std::endl;
+}
+
+FileScan::~FileScan()
+{
+  std::cout << "File Closed" << std::endl;
+  fileStream_.close();
+}
+
+FileScan::FileScan(const FileScan &source)
+{
+  std::stringstream fileName;
+  fileName << "../test/" << source.tableName << ".csv";
+  fileStream_.open(fileName.str());
+  std::cout << "COPYING content of FileScan instance " << &source << " to instance " << this << std::endl;
+}
+
+
+FileScan &FileScan::operator=(const FileScan &source)
+{
+  std::cout << "FileScan Copy Assignment Operator" << std::endl;
+
+  if (this == &source) {
+    return *this;
+  }
+
+  std::stringstream fileName;
+  fileName << "../test/" << source.tableName << ".csv";
+  fileStream_.open(fileName.str());
+
+  return *this;
+}
+
+FileScan::FileScan(FileScan &&source)
+{
+  std::cout << "FileScan Move Assignment Operator" << std::endl;
+}
+
+FileScan &FileScan::operator=(const FileScan &&source)
+{
+  if (this == &source) {
+    return *this;
+  }
+
+  std::stringstream fileName;
+  fileName << "../test/" << source.tableName << ".csv";
+  fileStream_.open(fileName.str());
+
+  return *this;
 }
 
 std::vector<std::string> FileScan::next() {
