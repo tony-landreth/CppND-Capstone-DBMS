@@ -99,10 +99,9 @@ TEST_F(ProjectionTest, TestNext) {
 // Tests for Join
 class JoinTest : public ::testing::Test {
   protected:
-  std::vector<std::string> where{"title", "EQUALS","The Fall"};
-  std::vector<std::string> col_names{ "title" };
-  std::vector<std::string> keys{ "movieId", "movieId" };
-
+    std::vector<std::string> where{"title", "EQUALS","The Fall"};
+    std::vector<std::string> col_names{ "title" };
+    std::vector<std::string> keys{ "movieId", "movieId" };
 };
 
 TEST_F(JoinTest, TestNext) {
