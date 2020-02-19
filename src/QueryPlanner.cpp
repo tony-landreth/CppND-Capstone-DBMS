@@ -69,7 +69,10 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(tableName);
-  fs->scanFile();
+  FileScan* fs_ptr = fs.get();
+
+  auto ftr = std::async(&FileScan::scanFile, fs_ptr);
+  ftr.get();
 
   if(query[1] == "*") {
     std::vector<std::string> where{ query[0], query[1], query[2] };
