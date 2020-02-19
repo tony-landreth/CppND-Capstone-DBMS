@@ -15,12 +15,12 @@ class FileScan : public PlanNode
     std::vector<std::string> next();
     std::map<std::string,int> schema;
     std::string tableName;
+    void scanFile();
 
   private:
     std::vector<std::string> next_();
     std::ifstream fileStream_;
     std::vector<std::vector<std::string> > relation_;
     int idx_for_next_;
-    void scanFile(std::string tableName);
 };
 #endif

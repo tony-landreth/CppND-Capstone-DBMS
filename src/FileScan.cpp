@@ -1,12 +1,9 @@
 #include "FileScan.h"
 
-FileScan::FileScan(std::string tableName) : tableName(tableName)
-{
-  scanFile(tableName);
-}
+FileScan::FileScan(std::string tableName) : tableName(tableName){};
 
 
-void FileScan::scanFile(std::string tableName) {
+void FileScan::scanFile() {
   std::stringstream fileName;
   fileName << "../test/" << tableName << ".csv";
   fileStream_.open(fileName.str());

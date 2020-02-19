@@ -1,8 +1,4 @@
 #include "QueryPlanner.h"
-#include "FileScan.h"
-#include "Selection.h"
-#include "Projection.h"
-#include <algorithm>
 
 QueryPlanner::QueryPlanner(int argc, char** argv) : argc_(argc), argv_(argv) {};
 
@@ -73,6 +69,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(tableName);
+  fs->scanFile();
 
   if(query[1] == "*") {
     std::vector<std::string> where{ query[0], query[1], query[2] };

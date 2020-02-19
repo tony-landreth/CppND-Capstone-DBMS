@@ -5,6 +5,12 @@
 #include<string>
 #include<vector>
 #include<iostream>
+#include <algorithm>
+#include <thread>
+#include <future>
+#include "FileScan.h"
+#include "Selection.h"
+#include "Projection.h"
 
 class QueryPlanner{
   public:
@@ -16,6 +22,7 @@ class QueryPlanner{
     int argc_;
 
     std::vector<std::string> tokenize();
+    FileScan scanFile(std::string tableName);
 };
 
 #endif
