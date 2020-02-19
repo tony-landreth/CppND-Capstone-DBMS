@@ -5,17 +5,13 @@
 #include "QueryPlanner.h"
 #include <sstream> 
 
-//TODO: Implement Rule of Five for something
 //TODO: Use a Template Function for something
-//TODO: Use concurrency to read entire tables into memory before running JOIN
-
-
-//TODO: Enable Select to take * as input
-//TODO: Create an abstraction for the code below
 
 int main(int argc, char** argv) {
   // First query is: "SELECT * FROM movies"
   // Like this: ./mildDBMS "SELECT * FROM test_data;"
+  // Second query is: "SELECT movies.title, ratings.rating FROM movies JOIN ratings ON movies.movieId=ratings.movieId;"
+
   QueryPlanner qp = QueryPlanner(argc, argv);
   std::vector<std::vector<std::string> > result = qp.run();
 
