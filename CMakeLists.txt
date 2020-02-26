@@ -14,6 +14,6 @@ file(GLOB project_SRCS src/*.cpp) #src/*.h
 add_executable(mildDBMS ${project_SRCS})
 
 
-add_executable(test test/utest_mildDBMS.cpp src/FileScan.cpp src/Selection.cpp src/Projection.cpp src/schema_loader.cpp src/Join.cpp src/QueryPlanner.cpp)
+add_executable(test test/utest_mildDBMS.cpp src/FileScan.cpp src/Selection.cpp src/Projection.cpp src/schema_loader.cpp src/Join.cpp src/QueryPlanner.cpp src/Tokenizer.cpp)
 
 target_link_libraries(test gtest_main)

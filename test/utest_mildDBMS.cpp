@@ -172,6 +172,46 @@ TEST_F(QueryWithProjectionTest, Run) {
 
   EXPECT_EQ(result, expectedResult);
 }
+
+class TokenizerTest : public ::testing::Test {
+  protected:
+    Tokenizer t;
+    std::string query = "SELECT title FROM test_data;";
+};
+
+TEST_F(TokenizerTest, Tokenize) {
+  TokenTree tt = t.tokenize(query);
+  std::vector<std::string> expectedResult{ "SELECT", "title", "FROM", "test_data" };
+  std::vector<std::string> result;
+
+  for(int i = 0; i < tt.leaves.size(); i++) {
+    TokenTree curr = tt.leaves[i];
+    result.push_back(curr.token);
+
+    for(int j = 0; j < curr.leaves.size(); j++) {
+      result.push_back(curr.leaves[j].token);
+    }
+  }
+
+  EXPECT_EQ(result, expectedResult);
+}
+
+class TokenizerWithWhereTest : public ::testing::Test {
+  protected:
+    Tokenizer t;
+    std::string query = "SELECT title FROM test_data WHERE title EQUALS \"The Fall\";";
+};
+
+TEST_F(TokenizerWithWhereTest, Tokenize) {
+  TokenTree tt = t.tokenize(query);
+  std::vector<std::string> expectedResult{ "ROOT TOKEN", "SELECT", "title", "FROM", "test_data", "WHERE", "title", "EQUALS", "The Fall" };
+  std::vector<std::string> result;
+
+  result = tt.depthFirstSearch(&result);
+  EXPECT_EQ(result, expectedResult);
+}
+
+
 /*
 class ComplexQueryTest : public ::testing::Test {
   protected:

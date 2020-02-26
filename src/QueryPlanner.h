@@ -5,12 +5,12 @@
 #include<string>
 #include<vector>
 #include<iostream>
-#include <algorithm>
-#include <thread>
-#include <future>
+#include<algorithm>
+#include<future>
 #include "FileScan.h"
 #include "Selection.h"
 #include "Projection.h"
+#include "Tokenizer.h"
 
 class QueryPlanner{
   public:
