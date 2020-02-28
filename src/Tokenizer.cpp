@@ -1,6 +1,7 @@
 #include "Tokenizer.h"
 #include<iostream>
 
+// Method for Testing
 std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v) {
   v->push_back(this->token);
 
@@ -11,13 +12,29 @@ std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v
   return *v;
 }
 
-std::string Tokenizer::joinQuotedTokens(std::vector<std::string> tkns) {
-  std::string str = tkns[pos];
-  std::string chars = "\"\\;";
+void Tokenizer::checkForEOQ(){
+  std::string stop_char = ";";
 
-    if(str.find("\"") != std::string::npos) {
+  if(tkn.find(";") != std::string::npos) {
+    endOfQuery = true;
+
+    for (char c: stop_char) {
+      tkn.erase(std::remove(tkn.begin(), tkn.end(), c), tkn.end());
+    }
+  }
+}
+
+//TODO: see if you can make this a nextToken() method, no need for an argument
+std::string Tokenizer::joinQuotedTokens(std::vector<std::string> tkns) {
+  checkForEOQ();
+  std::string str;
+  str = tkns[pos];
+
+  std::string quote_chars = "'";
+
+    if(str.find(quote_chars) != std::string::npos) {
       // remove unneeded chars
-      for (char c: chars) {
+      for (char c: quote_chars) {
         str.erase(std::remove(str.begin(), str.end(), c), str.end());
       }
       pos++;
@@ -26,12 +43,8 @@ std::string Tokenizer::joinQuotedTokens(std::vector<std::string> tkns) {
       while(true) {
         str = str + " " + tkns[pos];
         // remove unneeded chars
-        for (char c: chars) {
-          str.erase(std::remove(str.begin(), str.end(), c), str.end());
-        }
 
-        if(tkns[pos].find("\"") != std::string::npos) {
-          // remove slash and quote and semi-colon
+        if(str.find(quote_chars) != std::string::npos) {
           break;
         } else {
           pos++;
@@ -39,23 +52,134 @@ std::string Tokenizer::joinQuotedTokens(std::vector<std::string> tkns) {
       }
     }
 
-  return str;
+  for (char c: quote_chars) {
+    str.erase(std::remove(str.begin(), str.end(), c), str.end());
+  }
+  tkn = str;
+  checkForEOQ();
+  return tkn;
+}
+
+void Tokenizer::parseSelect() {
+  // Advance to next token
+  pos++;
+  joinQuotedTokens(tkns);
+
+  // Add all tokens until FROM is reached
+  while(tkn != "FROM") {
+    TokenTree node;
+    node.token = tkn;
+    sel.leaves.push_back(node);
+
+    // Advance by one token
+    pos++;
+    joinQuotedTokens(tkns);
+  }
+
+  // Advance past FROM token
+  pos++;
+  joinQuotedTokens(tkns);
+
+  TokenTree tbl;
+  tbl.token = tkn;
+  frm.leaves.push_back(tbl);
+
+  pos++;
+  joinQuotedTokens(tkns);
+
+  // push additional tables if there are any
+  while((tkn != "WHERE") && (tkn != "JOIN") && !endOfQuery) {
+    TokenTree node;
+    node.token = tkn;
+    frm.leaves.push_back(node);
+
+    // Advance by one token
+    pos++;
+    joinQuotedTokens(tkns);
+  }
+}
+
+void Tokenizer::parseWhere() {
+  while(( tkn != "JOIN" ) && (!endOfQuery)){
+    checkForEOQ();
+
+    pos++;
+    if(pos>= tkns.size()) { break; }
+    joinQuotedTokens(tkns);
+    TokenTree prd;
+
+    prd.token = tkn;
+
+    pos++;
+    if(pos>= tkns.size()) { break; }
+    joinQuotedTokens(tkns);
+    TokenTree eql;
+
+    checkForEOQ();
+    eql.token = "EQUALS";
+
+    pos++;
+    if(pos>= tkns.size()) { break; }
+    joinQuotedTokens(tkns);
+    TokenTree val;
+
+    checkForEOQ();
+    val.token = tkn;
+
+    eql.leaves.push_back(val);
+    prd.leaves.push_back(eql);
+    whr.leaves.push_back(prd);
+
+    pos++;
+    if(pos>= tkns.size()) { break; }
+    tkn = joinQuotedTokens(tkns);
+  }
+}
+
+void Tokenizer::parseJoin() {
+  //Advance past JOIN token
+  //TODO: see if you can move pos++ into joinQuotedTokens
+  pos++;
+  joinQuotedTokens(tkns);
+
+  TokenTree tbl;
+  tbl.token = tkn;
+  pos++;
+
+  TokenTree on;
+  on.token = "ON";
+  pos++;
+
+  TokenTree rId;
+  rId.token = joinQuotedTokens(tkns);
+  pos++;
+
+  TokenTree eq;
+  eq.token = "=";
+  pos++;
+
+  TokenTree lId;
+  lId.token = joinQuotedTokens(tkns);
+  pos ++;
+  joinQuotedTokens(tkns);
+
+  on.leaves.push_back(rId);
+  on.leaves.push_back(eq);
+  on.leaves.push_back(lId);
+  tbl.leaves.push_back(on);
+  jn.leaves.push_back(tbl);
 }
 
 TokenTree Tokenizer::tokenize(std::string str) {
-  bool endOfQuery = false;
-
   //Initialize the Token Tree
   TokenTree root;
   root.token = "ROOT TOKEN";
-
-  // Add a SELECT node
-  TokenTree sel;
   sel.token = "SELECT";
+  frm.token = "FROM";
+  whr.token = "WHERE";
+  jn.token = "JOIN";
 
   std::istringstream tkn_stream(str);
-  std::vector<std::string> tkns;
-  std::string tkn;
   std::string tmp;
   std::vector<std::string> selectors;
   std::vector<std::string> tableNames;
@@ -66,93 +190,29 @@ TokenTree Tokenizer::tokenize(std::string str) {
     tkns.push_back(tmp);
   }
 
-  // Add a FROM node
-  TokenTree frm;
-  frm.token = "FROM";
+  joinQuotedTokens(tkns);
 
-  // Add a WHERE node
-  TokenTree whr;
-  whr.token = "WHERE";
+  while(!endOfQuery) {
+    if(tkn == "SELECT")
+      parseSelect();
 
-  for (; pos < tkns.size(); ++pos) {
-    tkn = tkns[pos];
+    if(tkn == "JOIN")
+      parseJoin();
 
-    if(tkn == "SELECT") {
-      // Advance to next token
-      pos++;
-      tkn = tkns[pos];
+    if(tkn == "WHERE")
+      parseWhere();
 
-      // Add all tokens until FROM is reached
-      while(tkn != "FROM") {
-        TokenTree node;
-        node.token = tkn;
-        sel.leaves.push_back(node);
-
-        // Advance by one token
-        pos++;
-        tkn = tkns[pos];
-      }
-
-      // Advance past FROM token
-      pos++;
-      tkn = tkns[pos];
-
-      // Remove semi-colon, indicating end of query statement
-      if(tkn.find(";") != std::string::npos){
-        endOfQuery = true;
-        tkn.erase(tkn.size() - 1);
-      }
-
-      // Advance until JOIN or WHERE
-      while( tkn != "WHERE" ) {
-        // push table name
-        TokenTree frmTable;
-        frmTable.token = tkn;
-        frm.leaves.push_back(frmTable);
-
-        // Advance by one token
-        pos++;
-        if(pos>= tkns.size())
-          break;
-        tkn = tkns[pos];
-      }
-      // Advance until ;
-      if(endOfQuery) { break; }
-
-      if(tkn == "WHERE") {
-        pos++;
-        if(pos>= tkns.size()) { break; }
-        tkn = tkns[pos];
-        TokenTree prd;
-        prd.token = tkn;
-
-        pos++;
-        if(pos>= tkns.size()) { break; }
-        tkn = tkns[pos];
-        TokenTree eql;
-        eql.token = "EQUALS";
-
-        pos++;
-        if(pos>= tkns.size()) { break; }
-        tkn = joinQuotedTokens(tkns);
-        TokenTree val;
-        val.token = tkn;
-
-        eql.leaves.push_back(val);
-        prd.leaves.push_back(eql);
-        whr.leaves.push_back(prd);
-
-        pos++;
-        if(pos>= tkns.size()) { break; }
-        tkn = tkns[pos];
-      }
-    }
+    if(pos > tkns.size())
+      endOfQuery = true;
+      break;
   }
 
   if(sel.leaves.size() > 0)
     root.leaves.push_back(sel);
   if(frm.leaves.size() > 0)
     root.leaves.push_back(frm);
+  if(jn.leaves.size() > 0)
+    root.leaves.push_back(jn);
   if(whr.leaves.size() > 0)
     root.leaves.push_back(whr);
 

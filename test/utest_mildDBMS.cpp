@@ -199,7 +199,7 @@ TEST_F(TokenizerTest, Tokenize) {
 class TokenizerWithWhereTest : public ::testing::Test {
   protected:
     Tokenizer t;
-    std::string query = "SELECT title FROM test_data WHERE title EQUALS \"The Fall\";";
+    std::string query = "SELECT title FROM test_data WHERE title EQUALS 'The Fall';";
 };
 
 TEST_F(TokenizerWithWhereTest, Tokenize) {
@@ -211,7 +211,35 @@ TEST_F(TokenizerWithWhereTest, Tokenize) {
   EXPECT_EQ(result, expectedResult);
 }
 
+class TokenizerWithJoinTest : public ::testing::Test {
+  protected:
+    Tokenizer t;
+    std::string query = "SELECT * FROM movies JOIN ratings ON movieId = movieId;";
+};
 
+TEST_F(TokenizerWithJoinTest, Tokenize) {
+  TokenTree tt = t.tokenize(query);
+  std::vector<std::string> expectedResult{ "ROOT TOKEN", "SELECT", "*", "FROM", "movies", "JOIN", "ratings", "ON", "movieId", "=", "movieId" };
+  std::vector<std::string> result;
+
+  result = tt.depthFirstSearch(&result);
+  EXPECT_EQ(result, expectedResult);
+}
+
+class TokenizerWithWhereJoinTest : public ::testing::Test {
+  protected:
+    Tokenizer t;
+    std::string query = "SELECT * FROM movies JOIN ratings ON movieId = movieId WHERE title EQUALS 'The Fall';";
+};
+
+TEST_F(TokenizerWithWhereJoinTest, Tokenize) {
+  TokenTree tt = t.tokenize(query);
+  std::vector<std::string> expectedResult{ "ROOT TOKEN", "SELECT", "*", "FROM", "movies", "JOIN", "ratings", "ON", "movieId", "=", "movieId", "WHERE", "title", "EQUALS", "The Fall" };
+  std::vector<std::string> result;
+
+  result = tt.depthFirstSearch(&result);
+  EXPECT_EQ(result, expectedResult);
+}
 /*
 class ComplexQueryTest : public ::testing::Test {
   protected:
