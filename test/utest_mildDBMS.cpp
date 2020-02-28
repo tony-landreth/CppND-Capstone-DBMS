@@ -181,17 +181,9 @@ class TokenizerTest : public ::testing::Test {
 
 TEST_F(TokenizerTest, Tokenize) {
   TokenTree tt = t.tokenize(query);
-  std::vector<std::string> expectedResult{ "SELECT", "title", "FROM", "test_data" };
+  std::vector<std::string> expectedResult{ "ROOT TOKEN", "SELECT", "title", "FROM", "test_data" };
   std::vector<std::string> result;
-
-  for(int i = 0; i < tt.leaves.size(); i++) {
-    TokenTree curr = tt.leaves[i];
-    result.push_back(curr.token);
-
-    for(int j = 0; j < curr.leaves.size(); j++) {
-      result.push_back(curr.leaves[j].token);
-    }
-  }
+  result = tt.depthFirstSearch(&result);
 
   EXPECT_EQ(result, expectedResult);
 }
