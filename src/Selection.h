@@ -4,7 +4,7 @@
 #include<string>
 #include<map>
 
-class Selection : PlanNode
+class Selection : public PlanNode
 {
   public:
     Selection(const std::vector<std::string> triple, const std::unique_ptr<FileScan> fs);

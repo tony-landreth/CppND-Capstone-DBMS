@@ -122,57 +122,7 @@ TEST_F(JoinTest, TestNext) {
   EXPECT_EQ(result, expectation);
 }
 
-
-// Tests for QueryPlanner
-
-class QueryPlannerTest : public ::testing::Test {
-  protected:
-    std::vector<std::string> arguments = {"./mildDBMS", "\"SELECT * FROM test_data;\""};
-    std::vector<char*> argv;
-
-};
-TEST_F(QueryPlannerTest, Run) {
-  std::vector<std::vector<std::string> > expectedResult{ 
-    { "movieId", "title", "genres" },
-    { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
-    { "2", "The Fall", "Adventure|Fantasy" },
-    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" } 
-  };
-
-  for (const auto& arg : arguments)
-      argv.push_back((char*)arg.data());
-  argv.push_back(nullptr);
-
-  QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-  EXPECT_EQ(result, expectedResult);
-}
-
-class QueryWithProjectionTest : public ::testing::Test {
-  protected:
-    std::vector<std::string> arguments = {"./mildDBMS", "SELECT title FROM test_data"};
-    std::vector<char*> argv;
-    std::vector<std::string> row;
-};
-
-TEST_F(QueryWithProjectionTest, Run) {
-  std::vector<std::vector<std::string> > expectedResult{ 
-    { "title" },
-    { "\"A Movie Title, With Commas, In the Title\"" },
-    { "The Fall"},
-    { "Jumanji (1995)" }
-  };
-
-  for (const auto& arg : arguments)
-      argv.push_back((char*)arg.data());
-  argv.push_back(nullptr);
-
-  QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-
-  EXPECT_EQ(result, expectedResult);
-}
-
+// Tests for Tokenizer
 class TokenizerTest : public ::testing::Test {
   protected:
     Tokenizer t;
@@ -232,6 +182,58 @@ TEST_F(TokenizerWithWhereJoinTest, Tokenize) {
   result = tt.depthFirstSearch(&result);
   EXPECT_EQ(result, expectedResult);
 }
+
+// Tests for QueryPlanner
+
+class QueryPlannerTest : public ::testing::Test {
+  protected:
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT * FROM test_data;"};
+    std::vector<char*> argv;
+};
+TEST_F(QueryPlannerTest, Run) {
+  std::vector<std::vector<std::string> > expectedResult{ 
+    { "movieId", "title", "genres" },
+    { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
+    { "2", "The Fall", "Adventure|Fantasy" },
+    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" } 
+  };
+
+  for (const auto& arg : arguments)
+      argv.push_back((char*)arg.data());
+
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  std::vector<std::vector<std::string> > result = qp.run();
+  EXPECT_EQ(result, expectedResult);
+}
+
+class QueryWithProjectionTest : public ::testing::Test {
+  protected:
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT title FROM test_data;"};
+    std::vector<char*> argv;
+    std::vector<std::string> row;
+};
+
+TEST_F(QueryWithProjectionTest, Run) {
+  std::vector<std::vector<std::string> > expectedResult{ 
+    { "title" },
+    { "\"A Movie Title, With Commas, In the Title\"" },
+    { "The Fall"},
+    { "Jumanji (1995)" }
+  };
+
+  for (const auto& arg : arguments)
+    argv.push_back((char*)arg.data());
+
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  std::vector<std::vector<std::string> > result = qp.run();
+
+  EXPECT_EQ(result, expectedResult);
+}
+
 /*
 class ComplexQueryTest : public ::testing::Test {
   protected:

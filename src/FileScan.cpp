@@ -3,6 +3,7 @@
 FileScan::FileScan(std::string tableName) : tableName(tableName){};
 
 
+//TODO: scanFile should run on init
 void FileScan::scanFile() {
   std::stringstream fileName;
   fileName << "../test/" << tableName << ".csv";

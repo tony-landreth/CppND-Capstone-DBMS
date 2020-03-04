@@ -12,6 +12,7 @@ std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v
   return *v;
 }
 
+// TODO: You should mark EOQ if you go 200 hundred tokens without a semi-colon
 void Tokenizer::checkForEOQ(){
   std::string stop_char = ";";
 
@@ -37,7 +38,6 @@ std::string Tokenizer::nextToken() {
 
   std::string str;
   str = tkns[pos];
-
 
   // Join elements of quoted expressions
   std::string quote_chars = "'";
@@ -91,6 +91,7 @@ std::string Tokenizer::parseSelect() {
   TokenTree tbl;
   tbl.token = nextToken();
   frm.leaves.push_back(tbl);
+
 
   curr = nextToken();
 
@@ -174,6 +175,8 @@ TokenTree Tokenizer::tokenize(std::string str) {
   whr.token = "WHERE";
   jn.token = "JOIN";
 
+  //TODO: Figure out why semi-colon gets stripped from argv
+  //str = str + ";";
   std::istringstream tkn_stream(str);
   std::string tmp;
   std::vector<std::string> selectors;
