@@ -1,6 +1,8 @@
 #include "FileScan.h"
 
-FileScan::FileScan(std::string tableName) : tableName(tableName){};
+FileScan::FileScan(std::string tableName) : tableName(tableName){
+  tableSize = 0;
+};
 
 
 //TODO: scanFile should run on init
@@ -20,6 +22,7 @@ void FileScan::scanFile() {
   while(row.size() > 0) {
     relation_.push_back(row);
     row = next_();
+    tableSize++;
   }
 
   fileStream_.close();

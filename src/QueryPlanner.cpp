@@ -18,25 +18,32 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
   int treeSize = root.leaves.size();
   std::map<std::string, std::vector<std::string> > queryData;
 
-  if(treeSize == 1){
-    TokenTree firstNode = root.leaves[0];
+  TokenTree firstNode = root.leaves[0];
 
-    if(firstNode.token == "SELECT"){
-      int firstNodeSize = firstNode.leaves.size();
-      //TODO: allow for handling multiple columns
-      std::vector<std::string> selCols{ firstNode.leaves[0].token };
-      queryData.insert({"SELECT", selCols});
+  int firstNodeSize = firstNode.leaves.size();
+  //TODO: allow for handling multiple columns
+  std::vector<std::string> selCols{ firstNode.leaves[0].token };
+  queryData.insert({"SELECT", selCols});
 
-      int fromNodeIdx = 1;
-      TokenTree fromNode = firstNode.leaves[fromNodeIdx];
+  int fromNodeIdx = 1;
+  TokenTree fromNode = firstNode.leaves[fromNodeIdx];
 
-      if(fromNode.token == "FROM") {
-        int tblNodeIdx = 2;
-        std::string tblName = fromNode.leaves[0].token;
-        queryData.insert({"FROM", { tblName }});
-      }
+  if(fromNode.token == "FROM") {
+    std::string tblName = fromNode.leaves[0].token;
+    queryData.insert({"FROM", { tblName }});
+  }
+
+  if(root.leaves.size() > 1){
+    TokenTree secondNode = root.leaves[1];
+    if(secondNode.token == "WHERE") {
+      std::string v1 = secondNode.leaves[0].token;
+      std::string eq = secondNode.leaves[1].token;
+      std::string v2 = secondNode.leaves[2].token;
+      std::vector<std::string> whrClause{ v1, eq, v2 };
+      queryData.insert({"WHERE", whrClause});
     }
   }
+
 
   return queryData;
 }
@@ -52,12 +59,15 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   bool selPresent = false;
   bool jnPresent = false;
   bool frmPresent = false;
+  int frmTableSize;
 
   std::map<std::string, std::vector<std::string> > queryData = buildQuery(tt);
   // TODO: The pipeline should always be Fs -> Sel -> Prj -> Jn regardless of whether
   // TODO: the query actually has a Prj or a Jn ... doing this will allow you to maintain
   // TODO: a consistent API / pipeline hierarchy
   std::unique_ptr<Projection> prjR;
+  std::unique_ptr<Selection> sel;
+  std::unique_ptr<FileScan> frmFs;
 
   if ( queryData.find("SELECT") != queryData.end() )
     selPresent = true; // found
@@ -80,68 +90,80 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   if(queryData["FROM"].size() == 1){
     std::string tblName = queryData["FROM"][0];
-    std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(tblName);
+    frmFs = std::make_unique<FileScan>(tblName);
     frmFs->scanFile();
-
-    std::vector<std::string> selCols = queryData["SELECT"];
+    frmTableSize = frmFs->tableSize;
+  }
+  std::vector<std::string> selCols = queryData["SELECT"];
     
-    // When query looks like "SELECT * FROM table;"
-    if( !whrPresent ) {
-      where = {"*", "*", "*"};
+  // When query looks like "SELECT * FROM table;"
+  if( !whrPresent ) {
+    where = {"*", "*", "*"};
+  }
+
+  // TODO: eliminate the if statement and just push everything through the pipeline fs -> sel -> prj -> jn
+  if(!whrPresent && !jnPresent){
+    sel = std::make_unique<Selection>(where, std::move(frmFs));
+    if(selCols[0] == "*") {
+      std::vector<std::string> emptyV;
+      prjR = std::make_unique<Projection>(emptyV, std::move( sel ));
+      row = prjR->next();
+    } else {
+      std::vector<std::string> title{ "title" };
+      prjR = std::make_unique<Projection>(title, std::move( sel ));
+      row = prjR->next();
     }
-    std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs));
 
-    // TODO: eliminate the if statement and just push everything through the pipeline fs -> sel -> prj -> jn
-    if(!whrPresent && !jnPresent){
-      if(selCols[0] == "*") {
-        std::vector<std::string> emptyV;
-        prjR = std::make_unique<Projection>(emptyV, std::move( sel ));
-        row = prjR->next();
-      } else {
-        std::vector<std::string> title{ "title" };
-        prjR = std::make_unique<Projection>(title, std::move( sel ));
-        row = prjR->next();
-      }
+    while(row.size() > 0){
+      results.push_back(row);
+      row = prjR->next();
 
-      std::cout << "row.size() " << row.size() << std::endl;
+      if(row.size() == 0)
+        return results;
+    }
+    return results;
+  }
+
+
+  if(whrPresent) {
+    std::vector<std::string> whrV = queryData["WHERE"];
+    sel = std::make_unique<Selection>(whrV, std::move(frmFs));
+    std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+
+    //TODO: Projection require you to be able to scan until you run fs's EOF
+    //TODO: Store a member variable (if you haven't already)
+
+    for(int i = 0; i < frmTableSize; i++){
+      row = prjR->next();
+      if(row.size() > 0)
+        results.push_back(row);
+    }
+
+    return results;
+  }
+
+/*
+    if(!jnPresent){
+      // Pull data through Projection node
+      row = prjR->next();
 
       while(row.size() > 0){
         results.push_back(row);
         row = prjR->next();
-
-        if(row.size() == 0)
-          return results;
       }
-      return results;
     }
 
-
-    if(whrPresent) {
-      std::vector<std::string> whrV = queryData["WHERE"];
-      std::unique_ptr<Projection> prjR = std::make_unique<Projection>(whrV, std::move( sel ));
-
-      if(!jnPresent){
-        // Pull data through Projection node
-        row = prjR->next();
-
-        while(row.size() > 0){
-          results.push_back(row);
-          row = prjR->next();
-        }
-      }
-
-      if(jnPresent){
-        //TODO: To make this legit, you'll have to build up an Fs -> Sel -> Prj from ON and SELECT cols
-        std::unique_ptr<Projection> prjS = std::make_unique<Projection>(whrV, std::move( sel ));
-        std::unique_ptr<Join> jn = std::make_unique<Join>(std::move( prjR ), std::move( prjS ), whrV);
-      }
+    if(jnPresent){
+      //TODO: To make this legit, you'll have to build up an Fs -> Sel -> Prj from ON and SELECT cols
+      std::unique_ptr<Projection> prjS = std::make_unique<Projection>(whrV, std::move( sel ));
+      std::unique_ptr<Join> jn = std::make_unique<Join>(std::move( prjR ), std::move( prjS ), whrV);
     }
   }
   else{
     results.push_back(badQueryMsg);
     return results;
   }
-
+*/
 /*
   std::string tableName = query.back();
   std::string chars = ";\"";

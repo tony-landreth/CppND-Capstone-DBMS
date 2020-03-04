@@ -234,10 +234,9 @@ TEST_F(QueryWithProjectionTest, Run) {
   EXPECT_EQ(result, expectedResult);
 }
 
-/*
 class ComplexQueryTest : public ::testing::Test {
   protected:
-    std::vector<std::string> arguments = {"./mildDBMS", "\"SELECT title FROM test_data WHERE title EQUALS \"The Fall\""};
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT title FROM test_data WHERE title EQUALS 'The Fall';"};
     std::vector<char*> argv;
     std::vector<std::string> row;
 };
@@ -248,7 +247,7 @@ TEST_F(ComplexQueryTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::string> expectedResult{ "The Fall", "The Fall" };
+  std::vector<std::string> expectedResult{ "The Fall" };
   std::vector<std::vector<std::string> > result = qp.run();
 
   if(result.size() > 0) {
@@ -257,4 +256,3 @@ TEST_F(ComplexQueryTest, Run) {
 
   EXPECT_EQ(row, expectedResult);
 }
-*/
