@@ -62,9 +62,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   int frmTableSize;
 
   std::map<std::string, std::vector<std::string> > queryData = buildQuery(tt);
-  // TODO: The pipeline should always be Fs -> Sel -> Prj -> Jn regardless of whether
-  // TODO: the query actually has a Prj or a Jn ... doing this will allow you to maintain
-  // TODO: a consistent API / pipeline hierarchy
   std::unique_ptr<Projection> prjR;
   std::unique_ptr<Selection> sel;
   std::unique_ptr<FileScan> frmFs;
@@ -81,27 +78,29 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   if ( queryData.find("JOIN") != queryData.end() )
     jnPresent = true; // found
 
+  // TODO: extract this into a method that returns a boolean indicating whether query is wff
   // Handle commands missing the minimal data to issue a query
-  bool badQuery = ( !frmPresent || !selPresent );
+  bool badQuery = ( !frmPresent || !selPresent || (queryData["FROM"].size() > 1));
   if(badQuery){
     results.push_back(badQueryMsg);
     return results;
   }
 
-  if(queryData["FROM"].size() == 1){
-    std::string tblName = queryData["FROM"][0];
-    frmFs = std::make_unique<FileScan>(tblName);
-    frmFs->scanFile();
-    frmTableSize = frmFs->tableSize;
-  }
+  std::string tblName = queryData["FROM"][0];
+  frmFs = std::make_unique<FileScan>(tblName);
+  frmFs->scanFile();
+  frmTableSize = frmFs->tableSize;
   std::vector<std::string> selCols = queryData["SELECT"];
     
   // When query looks like "SELECT * FROM table;"
   if( !whrPresent ) {
     where = {"*", "*", "*"};
+  } else {
+    where = queryData["WHERE"];
   }
 
   // TODO: eliminate the if statement and just push everything through the pipeline fs -> sel -> prj -> jn
+  // TODO: do this by setting selCols within the conditional
   if(!whrPresent && !jnPresent){
     sel = std::make_unique<Selection>(where, std::move(frmFs));
     if(selCols[0] == "*") {
@@ -125,13 +124,10 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
 
+  // TODO: Even if not whrPresent, you should iterate the full length of frmTableSize
   if(whrPresent) {
-    std::vector<std::string> whrV = queryData["WHERE"];
-    sel = std::make_unique<Selection>(whrV, std::move(frmFs));
+    sel = std::make_unique<Selection>(where, std::move(frmFs));
     std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
-
-    //TODO: Projection require you to be able to scan until you run fs's EOF
-    //TODO: Store a member variable (if you haven't already)
 
     for(int i = 0; i < frmTableSize; i++){
       row = prjR->next();

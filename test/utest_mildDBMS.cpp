@@ -256,3 +256,6 @@ TEST_F(ComplexQueryTest, Run) {
 
   EXPECT_EQ(row, expectedResult);
 }
+//TODO: Queries with JOINS are next
+
+

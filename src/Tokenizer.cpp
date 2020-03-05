@@ -1,6 +1,8 @@
 #include "Tokenizer.h"
 #include<iostream>
 
+// TODO: Move TokenTree into its own files and define a delete function that
+// TODO: deletes all of a TokenTree's children
 // Method for Testing
 std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v) {
   v->push_back(this->token);
