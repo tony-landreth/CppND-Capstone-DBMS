@@ -86,23 +86,27 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     return results;
   }
 
+  // Build FROM Node
+
   std::string tblName = queryData["FROM"][0];
   frmFs = std::make_unique<FileScan>(tblName);
   frmFs->scanFile();
   frmTableSize = frmFs->tableSize;
-  std::vector<std::string> selCols = queryData["SELECT"];
-    
-  // When query looks like "SELECT * FROM table;"
+
+  // Build SELECTION Node
+
   if( !whrPresent ) {
+    // When query looks like "SELECT * FROM table;"
     where = {"*", "*", "*"};
   } else {
     where = queryData["WHERE"];
   }
+  std::vector<std::string> selCols = queryData["SELECT"];
+  sel = std::make_unique<Selection>(where, std::move(frmFs));
 
   // TODO: eliminate the if statement and just push everything through the pipeline fs -> sel -> prj -> jn
   // TODO: do this by setting selCols within the conditional
   if(!whrPresent && !jnPresent){
-    sel = std::make_unique<Selection>(where, std::move(frmFs));
     if(selCols[0] == "*") {
       std::vector<std::string> emptyV;
       prjR = std::make_unique<Projection>(emptyV, std::move( sel ));
@@ -126,7 +130,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   // TODO: Even if not whrPresent, you should iterate the full length of frmTableSize
   if(whrPresent) {
-    sel = std::make_unique<Selection>(where, std::move(frmFs));
     std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
 
     for(int i = 0; i < frmTableSize; i++){
