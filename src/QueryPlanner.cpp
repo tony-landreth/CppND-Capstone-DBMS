@@ -16,7 +16,6 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
   // TODO: create an experiment file to try to figure out polymorphism with smart pointers
   // in /experiments
   int treeSize = root.leaves.size();
-  std::map<std::string, std::vector<std::string> > queryData;
 
   TokenTree firstNode = root.leaves[0];
 
@@ -48,21 +47,7 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
   return queryData;
 }
 
-std::vector<std::vector<std::string> > QueryPlanner::run()
-{
-  std::vector<std::string> badQueryMsg{ "You have not submitted a valid query.", "The minimal query has the form SELECT * FROM table_name;" };
-  std::vector<std::vector<std::string> > results;
-  std::vector<std::string> row;
-  TokenTree tt = tokenize();
-  std::vector<std::string> where;
-  bool whrPresent = false;
-  bool selPresent = false;
-  bool jnPresent = false;
-  bool frmPresent = false;
-  int frmTableSize;
-
-  std::map<std::string, std::vector<std::string> > queryData = buildQuery(tt);
-
+void QueryPlanner::detectClauses(){
   if ( queryData.find("SELECT") != queryData.end() )
     selPresent = true; // found
 
@@ -74,6 +59,19 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   if ( queryData.find("JOIN") != queryData.end() )
     jnPresent = true; // found
+}
+
+std::vector<std::vector<std::string> > QueryPlanner::run()
+{
+  std::vector<std::string> badQueryMsg{ "You have not submitted a valid query.", "The minimal query has the form SELECT * FROM table_name;" };
+  std::vector<std::vector<std::string> > results;
+  std::vector<std::string> row;
+  TokenTree tt = tokenize();
+  std::vector<std::string> where;
+  int frmTableSize;
+
+  std::map<std::string, std::vector<std::string> > queryData = buildQuery(tt);
+  detectClauses(); // Set flags for clauses detected in queryData
 
   // TODO: extract this into a method that returns a boolean indicating whether query is wff
   // Handle commands missing the minimal data to issue a query
