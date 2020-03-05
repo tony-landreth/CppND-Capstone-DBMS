@@ -115,6 +115,7 @@ TEST_F(JoinTest, TestNext) {
   std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ));
 
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
+  //TODO: this is ugly, fix it
   std::vector<std::string> result = join.next();
   join.next();
   result = join.next();
@@ -258,4 +259,27 @@ TEST_F(ComplexQueryTest, Run) {
 }
 //TODO: Queries with JOINS are next
 
+class JoinQueryTest : public ::testing::Test {
+  protected:
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT * FROM test_data JOIN test_data ON movieId = movieId;"};
+    std::vector<char*> argv;
+    std::vector<std::string> row;
+    std::vector<std::vector<std::string> >expectedResult{
+      { "movieId", "title", "genres", "movieId", "title", "genres" },
+      { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy", "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
+      { "2", "The Fall", "Adventure|Fantasy", "2", "The Fall", "Adventure|Fantasy" },
+      { "3", "Jumanji (1995)", "Adventure|Children|Fantasy", "3", "Jumanji (1995)", "Adventure|Children|Fantasy" }
+    };
+};
+
+TEST_F(JoinQueryTest, Run) {
+  for (const auto& arg : arguments)
+      argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  std::vector<std::vector<std::string> > result = qp.run();
+
+  EXPECT_EQ(result, expectedResult);
+}
 

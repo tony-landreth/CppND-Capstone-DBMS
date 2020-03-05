@@ -5,6 +5,8 @@
 Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k) : r_(std::move( r )), s_(std::move( s )), keys_(k) {
 }
 
+// TODO: Make the below work like this:
+// Every time next() is called, we'll advance 1 S record and the total length of the R records
 std::vector<std::string> Join::next() {
   std::vector<std::string> result;
   std::string r_key = keys_[0];
@@ -15,8 +17,10 @@ std::vector<std::string> Join::next() {
   std::map<std::string, int> r_schema = schema_loader(r_table_name);
   std::map<std::string, int> s_schema = schema_loader(s_table_name);
 
-  std::vector<std::string> s_relation = s_->next();
+  // TODO: reduce all of this to just s_row and r_row
   std::vector<std::string> r_relation = r_->next();
+  std::vector<std::string> s_relation = s_->next();
+
   std::vector<std::string> r_row = r_relation;
   int r_colID = r_schema[r_key];
   int s_colID = s_schema[s_key];
@@ -29,15 +33,15 @@ std::vector<std::string> Join::next() {
     r_col = r_row[r_colID];
   }
 
+  // TODO: Figure out what this comment is talking about
   //  Once you roll r to the point where you've got a record that fits the where clause
   //  You then need to start rolling s
+  // When there are projections
   if(r_col.size() > 0) {
     while( true ) {
-
       if(s_relation.size() == 0) {
         break;
       }
-
       std::vector<std::string> s_row = s_relation;
       if(s_row.size() > 0)
         s_col = s_row[s_colID];
@@ -51,8 +55,8 @@ std::vector<std::string> Join::next() {
       }
 
       s_relation = s_->next();
-    }
-  }
+    } 
+  } 
 
   return result;
 }

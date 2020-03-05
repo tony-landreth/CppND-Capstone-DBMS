@@ -42,16 +42,29 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
       std::vector<std::string> whrClause{ v1, eq, v2 };
       queryData_.insert({"WHERE", whrClause});
     }
+    if(secondNode.token == "JOIN") {
+      std::string tbl = secondNode.leaves[0].token;
+      std::string on = secondNode.leaves[1].token;
+      std::string rKey = secondNode.leaves[2].token;
+      std::string eq = secondNode.leaves[3].token;
+      std::string sKey = secondNode.leaves[4].token;
+      std::vector<std::string> jnClause{ tbl, rKey, sKey };
+      queryData_.insert({"JOIN", jnClause});
+    }
   }
 
-  if(root.leaves.size() == 2){
+  if(root.leaves.size() > 2){
+    std::cout << "thirdNode exists!\n";
     TokenTree thirdNode = root.leaves[2];
 
     if(thirdNode.token == "JOIN") {
-      std::string rKey = thirdNode.leaves[0].token;
-      std::string eq = thirdNode.leaves[1].token;
-      std::string sKey = thirdNode.leaves[2].token;
-      std::vector<std::string> jnClause{ rKey, sKey };
+      std::string tbl = thirdNode.leaves[0].token;
+      std::string on = thirdNode.leaves[1].token;
+      std::string rKey = thirdNode.leaves[2].token;
+      std::string eq = thirdNode.leaves[3].token;
+      std::string sKey = thirdNode.leaves[4].token;
+      std::cout << "sKey " << sKey << std::endl;
+      std::vector<std::string> jnClause{ tbl, rKey, sKey };
       queryData_.insert({"JOIN", jnClause});
     }
   }
@@ -92,7 +105,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     return results;
   }
 
-  // Build FROM Node
+  // Build rFileScan Node
   std::string tblName = queryData_["FROM"][0];
   std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(tblName);
   frmFs->scanFile();
@@ -108,10 +121,27 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   // Build Join Node
   if(jnPresent_ ){
-    std::vector<std::string> rSelCols = queryData_["JOIN"];
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(rSelCols, std::move( sel ));
-    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), rSelCols);
+    std::vector<std::string> jnParams = queryData_["JOIN"];
+    //TODO: This shouldn't work, b/c you need unique pointers for the other nodes
+    // Build sFileScan Node
+    std::string sTblName = jnParams[0];
+    std::vector<std::string> sSelCols{ jnParams[1], jnParams[2] };
+    std::unique_ptr<FileScan> sFrmFs = std::make_unique<FileScan>(sTblName);
+    sFrmFs->scanFile();
 
+    // Build sSelection Node
+    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs));
+
+    // Build sProjection
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ));
+    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), sSelCols);
+
+    for(int i = 0; i < frmTableSize; i++){
+      row = jn->next();
+      if(row.size() > 0) {
+        results.push_back(row);
+      }
+    }
   } else {
     for(int i = 0; i < frmTableSize; i++){
       row = prjR->next();
@@ -119,8 +149,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
         results.push_back(row);
     }
   }
-
-  // Return query results
 
   return results;
 };
