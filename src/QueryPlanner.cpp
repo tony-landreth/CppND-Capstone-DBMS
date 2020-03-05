@@ -62,9 +62,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   int frmTableSize;
 
   std::map<std::string, std::vector<std::string> > queryData = buildQuery(tt);
-  std::unique_ptr<Projection> prjR;
-  std::unique_ptr<Selection> sel;
-  std::unique_ptr<FileScan> frmFs;
 
   if ( queryData.find("SELECT") != queryData.end() )
     selPresent = true; // found
@@ -87,53 +84,27 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   // Build FROM Node
-
   std::string tblName = queryData["FROM"][0];
-  frmFs = std::make_unique<FileScan>(tblName);
+  std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(tblName);
   frmFs->scanFile();
   frmTableSize = frmFs->tableSize;
 
   // Build SELECTION Node
-
-  if( !whrPresent ) {
-    // When query looks like "SELECT * FROM table;"
-    where = {"*", "*", "*"};
-  } else {
-    where = queryData["WHERE"];
-  }
+  where = queryData["WHERE"];
   std::vector<std::string> selCols = queryData["SELECT"];
-  sel = std::make_unique<Selection>(where, std::move(frmFs));
+  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs));
 
-  // TODO: eliminate the if statement and just push everything through the pipeline fs -> sel -> prj -> jn
-  // TODO: do this by setting selCols within the conditional
-  if(!whrPresent && !jnPresent){
+  // Build Projection Node
+  std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
 
-    prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+  // Return query results
+  for(int i = 0; i < frmTableSize; i++){
     row = prjR->next();
-
-    while(row.size() > 0){
+    if(row.size() > 0)
       results.push_back(row);
-      row = prjR->next();
-
-      if(row.size() == 0)
-        return results;
-    }
-    return results;
   }
 
-
-  // TODO: Even if not whrPresent, you should iterate the full length of frmTableSize
-  if(whrPresent) {
-    std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
-
-    for(int i = 0; i < frmTableSize; i++){
-      row = prjR->next();
-      if(row.size() > 0)
-        results.push_back(row);
-    }
-
-    return results;
-  }
+  return results;
 
 /*
     if(!jnPresent){

@@ -49,7 +49,7 @@ TEST_F(SelectionTest, TestNext) {
 class StarTest : public ::testing::Test {
   protected:
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
-    std::vector<std::string> where{"*", "*","*"};
+    std::vector<std::string> where{};
 };
 
 TEST_F(StarTest, TestSelectStarNext) {

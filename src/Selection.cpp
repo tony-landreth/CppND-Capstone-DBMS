@@ -6,9 +6,6 @@ Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> f
 std::vector<std::string> Selection::next()
 {
   tableName = fs->tableName;
-  std::string key = where_[0]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
-  std::string op = where_[1];  // is either * or EQUAL for the time being
-  std::string val = where_[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
   std::vector<std::string> empty_row;
   std::vector<std::string> row;
@@ -17,24 +14,28 @@ std::vector<std::string> Selection::next()
   if(row.size() == 0)
     return empty_row;
 
-  if(op == "EQUALS") {
-    std::map<std::string, int> schema = schema_loader(tableName);
-    int colNum = schema[key];
+  if(where_.size() == 3) {
+    std::string key = where_[0]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
+    std::string op = where_[1];  // is either * or EQUAL for the time being
+    std::string val = where_[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
-    // Return when the row contains only the empty string
-    if(( row.size() <= 1 ) && (row[0].empty()))
-      return empty_row;
+    if(op == "EQUALS") {
+      std::map<std::string, int> schema = schema_loader(tableName);
+      int colNum = schema[key];
 
-    std::string col = row[colNum];
+      // Return when the row contains only the empty string
+      if(( row.size() <= 1 ) && (row[0].empty()))
+        return empty_row;
 
-    if(col == val) {
-      return row;
-    } else {
-      return empty_row;
+      std::string col = row[colNum];
+
+      if(col == val) {
+        return row;
+      } else {
+        return empty_row;
+      }
     }
-  }
-
-  if(op == "*") {
+  } else {
     return row;
   }
 
