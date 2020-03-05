@@ -23,19 +23,16 @@ class QueryPlanner{
   private:
     char** argv_;
     int argc_;
-    //TODO: add _ to end of queryPlan
-    //TODO: this is misnamed
-    std::shared_ptr<PlanNode> queryPlan;
-    std::map<std::string, std::vector<std::string> > queryData;
+    std::map<std::string, std::vector<std::string> > queryData_;
+    void detectClauses();
+    bool whrPresent_ = false;
+    bool selPresent_ = false;
+    bool jnPresent_ = false;
+    bool frmPresent_ = false;
 
     TokenTree tokenize();
     FileScan scanFile(std::string tableName);
     std::map<std::string, std::vector<std::string> > buildQuery(TokenTree tt);
-    void detectClauses();
-    bool whrPresent = false;
-    bool selPresent = false;
-    bool jnPresent = false;
-    bool frmPresent = false;
 };
 
 #endif

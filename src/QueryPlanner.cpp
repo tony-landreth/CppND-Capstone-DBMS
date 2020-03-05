@@ -22,14 +22,14 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
   int firstNodeSize = firstNode.leaves.size();
   //TODO: allow for handling multiple columns
   std::vector<std::string> selCols{ firstNode.leaves[0].token };
-  queryData.insert({"SELECT", selCols});
+  queryData_.insert({"SELECT", selCols});
 
   int fromNodeIdx = 1;
   TokenTree fromNode = firstNode.leaves[fromNodeIdx];
 
   if(fromNode.token == "FROM") {
     std::string tblName = fromNode.leaves[0].token;
-    queryData.insert({"FROM", { tblName }});
+    queryData_.insert({"FROM", { tblName }});
   }
 
   if(root.leaves.size() > 1){
@@ -39,26 +39,26 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
       std::string eq = secondNode.leaves[1].token;
       std::string v2 = secondNode.leaves[2].token;
       std::vector<std::string> whrClause{ v1, eq, v2 };
-      queryData.insert({"WHERE", whrClause});
+      queryData_.insert({"WHERE", whrClause});
     }
   }
 
 
-  return queryData;
+  return queryData_;
 }
 
 void QueryPlanner::detectClauses(){
-  if ( queryData.find("SELECT") != queryData.end() )
-    selPresent = true; // found
+  if ( queryData_.find("SELECT") != queryData_.end() )
+    selPresent_ = true; // found
 
-  if ( queryData.find("FROM") != queryData.end() )
-    frmPresent = true; // found
+  if ( queryData_.find("FROM") != queryData_.end() )
+    frmPresent_ = true; // found
 
-  if ( queryData.find("WHERE") != queryData.end() )
-    whrPresent = true; // found
+  if ( queryData_.find("WHERE") != queryData_.end() )
+    whrPresent_ = true; // found
 
-  if ( queryData.find("JOIN") != queryData.end() )
-    jnPresent = true; // found
+  if ( queryData_.find("JOIN") != queryData_.end() )
+    jnPresent_ = true; // found
 }
 
 std::vector<std::vector<std::string> > QueryPlanner::run()
@@ -70,30 +70,33 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::vector<std::string> where;
   int frmTableSize;
 
-  std::map<std::string, std::vector<std::string> > queryData = buildQuery(tt);
-  detectClauses(); // Set flags for clauses detected in queryData
+  std::map<std::string, std::vector<std::string> > queryData_ = buildQuery(tt);
+  detectClauses(); // Set flags for clauses detected in queryData_
 
   // TODO: extract this into a method that returns a boolean indicating whether query is wff
   // Handle commands missing the minimal data to issue a query
-  bool badQuery = ( !frmPresent || !selPresent || (queryData["FROM"].size() > 1));
+  bool badQuery = ( !frmPresent_ || !selPresent_ || (queryData_["FROM"].size() > 1));
   if(badQuery){
     results.push_back(badQueryMsg);
     return results;
   }
 
   // Build FROM Node
-  std::string tblName = queryData["FROM"][0];
+  std::string tblName = queryData_["FROM"][0];
   std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(tblName);
   frmFs->scanFile();
   frmTableSize = frmFs->tableSize;
 
   // Build SELECTION Node
-  where = queryData["WHERE"];
-  std::vector<std::string> selCols = queryData["SELECT"];
+  where = queryData_["WHERE"];
+  std::vector<std::string> selCols = queryData_["SELECT"];
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs));
 
   // Build Projection Node
   std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+
+  // Build Join Node
+  // TODO
 
   // Return query results
   for(int i = 0; i < frmTableSize; i++){
