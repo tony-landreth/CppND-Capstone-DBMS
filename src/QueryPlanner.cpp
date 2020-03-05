@@ -12,6 +12,7 @@ TokenTree QueryPlanner::tokenize()
 
 // As you traverse the tree, build a pipeline of PlanNodes
 // returning a single node on which you can call next()
+// TODO: Rename to collectQueryData
 std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenTree root) {
   // TODO: create an experiment file to try to figure out polymorphism with smart pointers
   // in /experiments
@@ -43,6 +44,17 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
     }
   }
 
+  if(root.leaves.size() == 2){
+    TokenTree thirdNode = root.leaves[2];
+
+    if(thirdNode.token == "JOIN") {
+      std::string rKey = thirdNode.leaves[0].token;
+      std::string eq = thirdNode.leaves[1].token;
+      std::string sKey = thirdNode.leaves[2].token;
+      std::vector<std::string> jnClause{ rKey, sKey };
+      queryData_.insert({"JOIN", jnClause});
+    }
+  }
 
   return queryData_;
 }
@@ -73,7 +85,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::map<std::string, std::vector<std::string> > queryData_ = buildQuery(tt);
   detectClauses(); // Set flags for clauses detected in queryData_
 
-  // TODO: extract this into a method that returns a boolean indicating whether query is wff
   // Handle commands missing the minimal data to issue a query
   bool badQuery = ( !frmPresent_ || !selPresent_ || (queryData_["FROM"].size() > 1));
   if(badQuery){
@@ -96,14 +107,20 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
 
   // Build Join Node
-  // TODO
+  if(jnPresent_ ){
+    std::vector<std::string> rSelCols = queryData_["JOIN"];
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(rSelCols, std::move( sel ));
+    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), rSelCols);
+
+  } else {
+    for(int i = 0; i < frmTableSize; i++){
+      row = prjR->next();
+      if(row.size() > 0)
+        results.push_back(row);
+    }
+  }
 
   // Return query results
-  for(int i = 0; i < frmTableSize; i++){
-    row = prjR->next();
-    if(row.size() > 0)
-      results.push_back(row);
-  }
 
   return results;
 };
