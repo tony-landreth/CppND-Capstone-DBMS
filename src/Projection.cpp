@@ -17,6 +17,9 @@ std::vector<std::string> Projection::next(){
   if(column_names_.size() == 0)
     return row;
 
+  if(column_names_[0] == "*")
+    return row;
+
   tableName = sel_->tableName;
   std::map<std::string,int> schema = schema_loader(tableName);
 

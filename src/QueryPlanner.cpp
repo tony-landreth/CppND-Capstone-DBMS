@@ -107,15 +107,9 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // TODO: eliminate the if statement and just push everything through the pipeline fs -> sel -> prj -> jn
   // TODO: do this by setting selCols within the conditional
   if(!whrPresent && !jnPresent){
-    if(selCols[0] == "*") {
-      std::vector<std::string> emptyV;
-      prjR = std::make_unique<Projection>(emptyV, std::move( sel ));
-      row = prjR->next();
-    } else {
-      std::vector<std::string> title{ "title" };
-      prjR = std::make_unique<Projection>(title, std::move( sel ));
-      row = prjR->next();
-    }
+
+    prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+    row = prjR->next();
 
     while(row.size() > 0){
       results.push_back(row);
