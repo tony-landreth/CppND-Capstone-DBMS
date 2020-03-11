@@ -112,14 +112,27 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs));
 
   // Build Projection Node
-  std::unique_ptr<Projection> prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+  std::unique_ptr<Projection> prjR;
+
+  if(jnPresent_ ){
+    // Add JOIN keys to projection node
+    std::vector<std::string> jnParams = queryData_["JOIN"];
+    std::string sTblName = jnParams[0];
+    std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
+    // TODO: create a separate selCols, i.e. rSelCols and sSeCols
+    // So you can handle foreign keys with different names
+    selCols.push_back(jnKeys[0]);
+    prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+  } else {
+    prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+  }
 
   // Build Join Node
   if(jnPresent_ ){
     std::vector<std::string> jnParams = queryData_["JOIN"];
     // Build sFileScan Node
     std::string sTblName = jnParams[0];
-    std::vector<std::string> sSelCols{ jnParams[1], jnParams[2] };
+    std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
     std::unique_ptr<FileScan> sFrmFs = std::make_unique<FileScan>(sTblName);
     sFrmFs->scanFile();
 
@@ -128,9 +141,8 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
     // Build sProjection
     std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ));
-    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), sSelCols);
+    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys);
 
-    std::cout << "frmTableSize " << frmTableSize << std::endl;
     for(int i = 0; i < frmTableSize; i++){
       row = jn->next();
 
