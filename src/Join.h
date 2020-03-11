@@ -12,6 +12,7 @@ class Join : public PlanNode
   public:
     Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> keys);
     std::vector<std::string> next();
+    void rewind(){};
     int rTableSize;
     int sTableSize;
     // Joining table columns affects the number of columns in the in-memory table representation
