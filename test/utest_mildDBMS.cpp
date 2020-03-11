@@ -143,10 +143,28 @@ TEST_F(JoinTest, TestNext) {
   result = join.next();
   std::vector<std::string> expectation{ "The Fall", "The Fall" };
   EXPECT_EQ(result, expectation);
+}
 
-  std::map<std::string, int> expuct;
-  expuct = { {"title", 1} };
-  EXPECT_EQ(join.jSchema, expuct);
+TEST_F(JoinTest, jSchema) {
+  std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data");
+  mfs->scanFile();
+  std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data");
+  rfs->scanFile();
+  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ));
+  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ));
+  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ));
+  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ));
+
+  Join join( std::move( mprojection ), std::move( rprojection ), keys );
+  //TODO: this is ugly, fix it
+  std::vector<std::string> result;
+  join.next();
+  join.next();
+  result = join.next();
+
+  std::map<std::string, int> expected;
+  expected = { {"title", 1} };
+  EXPECT_EQ(join.jSchema, expected);
 }
 
 // Tests for Tokenizer
