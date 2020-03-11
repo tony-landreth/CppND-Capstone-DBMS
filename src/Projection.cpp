@@ -6,6 +6,7 @@ Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<Se
 std::vector<std::string> Projection::next(){
   std::vector<std::string> result;
   std::vector<std::string> row = sel_->next();
+  tableSize = sel_->tableSize;
 
   if(row.size() == 0)
     return result;
@@ -30,4 +31,12 @@ std::vector<std::string> Projection::next(){
   }
 
   return result;
+}
+
+void Projection::rewind(){
+  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(sel_->fs->tableName);
+  fs->scanFile();
+  std::vector<std::string> where = sel_->where;
+  if(where.size() > 0)
+  sel_ = std::make_unique<Selection>(sel_->where, std::move(fs));
 }
