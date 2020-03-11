@@ -10,7 +10,7 @@
 class Join : public PlanNode
 {
   public:
-    Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> keys);
+    Join(const std::unique_ptr<PlanNode> r, const std::unique_ptr<PlanNode> s, const std::vector<std::string> keys);
     std::vector<std::string> next();
     void rewind(){};
     int rTableSize;
@@ -21,10 +21,12 @@ class Join : public PlanNode
     std::map<std::string,int> jSchema;
 
   private:
-    std::unique_ptr<Projection> r_;
-    std::unique_ptr<Projection> s_;
+    std::unique_ptr<PlanNode> r_;
+    std::unique_ptr<PlanNode> s_;
     std::vector<std::string> keys_;
     int rowIdx = 0;
+    std::map<std::string,int> rColKeys;
+    std::map<std::string,int> sColKeys;
 };
 
 #endif

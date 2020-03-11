@@ -112,7 +112,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs));
 
   // Build Projection Node
-  std::unique_ptr<Projection> prjR;
+  std::unique_ptr<PlanNode> prjR;
 
   if(jnPresent_ ){
     // Add JOIN keys to projection node
@@ -140,7 +140,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs));
 
     // Build sProjection
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ));
+    std::unique_ptr<PlanNode> prjS = std::make_unique<Projection>(selCols, std::move( sSel ));
     std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys);
 
     for(int i = 0; i < frmTableSize; i++){

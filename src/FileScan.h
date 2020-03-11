@@ -16,7 +16,7 @@ class FileScan : public PlanNode
     void rewind(){};
     std::string tableName;
     void scanFile();
-    int tableSize;
+    int tableSize = 0;
 
   private:
     std::vector<std::string> next_();

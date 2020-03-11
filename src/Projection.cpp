@@ -24,17 +24,12 @@ std::vector<std::string> Projection::next(){
   schema = sel_->schema;
   tableName = schema.tableName;
   std::map<std::string,int> colKeys = schema.columnKeys;
-  std::map<std::string,int> newColKeys;
 
   for(int i = 0; i < column_names_.size(); i++) {
     std::string column_name = column_names_[i];
     int rowID = colKeys[column_name];
     result.push_back(row[rowID]);
-    newColKeys[column_name] = i;
   }
-
-  // Now that you've projected into a lower-dimensional space, update the Node's schema
-  schema.columnKeys = newColKeys;
 
   return result;
 }

@@ -1,8 +1,6 @@
 #include "FileScan.h"
 
-FileScan::FileScan(std::string tableName) : tableName(tableName){
-  tableSize = 0;
-};
+FileScan::FileScan(std::string tableName) : tableName(tableName){};
 
 
 //TODO: scanFile should run on init
