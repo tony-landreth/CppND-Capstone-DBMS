@@ -1,11 +1,12 @@
 #include "Selection.h"
 #include "schema_loader.h"
 
-Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs) : where_(where), fs(std::move(fs)) {}
+Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs) : where(where), fs(std::move(fs)) {}
 
 std::vector<std::string> Selection::next()
 {
   tableName = fs->tableName;
+  tableSize = fs->tableSize;
 
   std::vector<std::string> empty_row;
   std::vector<std::string> row;
@@ -14,10 +15,15 @@ std::vector<std::string> Selection::next()
   if(row.size() == 0)
     return empty_row;
 
-  if(where_.size() == 3) {
-    std::string key = where_[0]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
-    std::string op = where_[1];  // is either * or EQUAL for the time being
-    std::string val = where_[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
+  if(rowIdx == 0) {
+    rowIdx++;
+    return row;
+  }
+
+  if(where.size() == 3) {
+    std::string key = where[0]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
+    std::string op = where[1];  // is either * or EQUAL for the time being
+    std::string val = where[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
     if(op == "EQUALS") {
       std::map<std::string, int> schema = schema_loader(tableName);
