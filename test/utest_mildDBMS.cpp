@@ -79,8 +79,8 @@ class ProjectionTest : public ::testing::Test {
   protected:
     std::map<std::string,int> schema = schema_loader("movies");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
-    std::vector<std::string> where{"title", "EQUALS","The Fall"};
     std::vector<std::string> col_names{ "title" };
+    std::vector<std::string> where;
 };
 
 TEST_F(ProjectionTest, TestNext) {
@@ -106,11 +106,12 @@ TEST_F(ProjectionTest, Rewind) {
   projection.next();
   std::vector<std::string> row = projection.next();
   std::vector<std::string> expectation{ "The Fall" };
-
   EXPECT_EQ(row, expectation);
 
+  // Rewind to the first row of the table
   projection.rewind();
 
+  // Advance to a row where title = "The Fall"
   row = projection.next();
   row = projection.next();
   row = projection.next();
@@ -136,8 +137,8 @@ TEST_F(JoinTest, TestNext) {
   std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ));
 
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
-  //TODO: this is ugly, fix it
   std::vector<std::string> result;
+  // Advance to the relevant row
   join.next();
   join.next();
   result = join.next();
@@ -156,8 +157,8 @@ TEST_F(JoinTest, jSchema) {
   std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ));
 
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
-  //TODO: this is ugly, fix it
   std::vector<std::string> result;
+  // Advance to the relevant row
   join.next();
   join.next();
   result = join.next();
