@@ -18,9 +18,6 @@ std::vector<std::string> Join::next() {
   std::string r_table_name = rSchema.tableName;
   std::string s_table_name = sSchema.tableName;
 
-  // TODO: The schema is only useful when you haven't projected to a smaller number of columns
-  // TODO: Or expanded the number of columns via JOIN
-  // TODO: You need to be able to remap the schema with each expansion or contraction of columns
   std::map<std::string, int> rColKeys = rSchema.columnKeys;
   std::map<std::string, int> sColKeys = sSchema.columnKeys;
 
@@ -50,11 +47,13 @@ std::vector<std::string> Join::next() {
     std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));
     std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
 
+    /*
     // Note that you'll end up dropping keys for identically named columns in the block below.
     // Self joins will not be supported, until column aliasing is implemented
     for(int i = 0; i < result_row.size(); i++){
       jSchema[result_row[i]] = i;
     }
+    */
 
     return result_row;
   }

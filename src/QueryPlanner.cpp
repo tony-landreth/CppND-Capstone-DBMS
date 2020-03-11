@@ -45,9 +45,9 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
     if(secondNode.token == "JOIN") {
       std::string tbl = secondNode.leaves[0].token;
       std::string on = secondNode.leaves[1].token;
-      std::string rKey = secondNode.leaves[2].token;
+      std::string rKey = secondNode.leaves[1].leaves[0].token;
       std::string eq = secondNode.leaves[3].token;
-      std::string sKey = secondNode.leaves[4].token;
+      std::string sKey = secondNode.leaves[1].leaves[2].token;
       std::vector<std::string> jnClause{ tbl, rKey, sKey };
       queryData_.insert({"JOIN", jnClause});
     }

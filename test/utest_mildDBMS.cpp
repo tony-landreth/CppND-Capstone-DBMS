@@ -147,28 +147,6 @@ TEST_F(JoinTest, TestNext) {
   EXPECT_EQ(result, expectation);
 }
 
-TEST_F(JoinTest, jSchema) {
-  std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data");
-  mfs->scanFile();
-  std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data");
-  rfs->scanFile();
-  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ));
-  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ));
-  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ));
-  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ));
-
-  Join join( std::move( mprojection ), std::move( rprojection ), keys );
-  std::vector<std::string> result;
-  // Advance to the relevant row
-  join.next();
-  join.next();
-  result = join.next();
-
-  std::map<std::string, int> expected;
-  expected = { {"title", 1} };
-  EXPECT_EQ(join.jSchema, expected);
-}
-
 // Tests for Tokenizer
 class TokenizerTest : public ::testing::Test {
   protected:
@@ -323,7 +301,7 @@ TEST_F(JoinQueryTest, Run) {
 
   EXPECT_EQ(result, expectedResult);
 }
-/*
+
 class SelfJoinProjectionWhereQueryTest : public ::testing::Test {
   protected:
     std::vector<std::string> arguments = {"./mildDBMS", "SELECT title FROM movies JOIN movies ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"};
@@ -345,4 +323,3 @@ TEST_F(SelfJoinProjectionWhereQueryTest, Run) {
 
   EXPECT_EQ(result, expectedResult);
 }
-*/
