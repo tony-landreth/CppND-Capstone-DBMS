@@ -77,7 +77,8 @@ TEST_F(StarTest, TestSelectStarNext) {
 // Tests for Projection
 class ProjectionTest : public ::testing::Test {
   protected:
-    std::map<std::string,int> schema = schema_loader("movies");
+    TableSchema tblSchema = schema_loader("movies");
+    std::map<std::string,int> schema = tblSchema.columnKeys;
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
     std::vector<std::string> col_names{ "title", "genres" };
     std::vector<std::string> where;

@@ -26,7 +26,8 @@ std::vector<std::string> Selection::next()
     std::string val = where[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
     if(op == "EQUALS") {
-      std::map<std::string, int> schema = schema_loader(tableName);
+      TableSchema tblSchema = schema_loader(tableName);
+      std::map<std::string, int> schema = tblSchema.columnKeys;
       int colNum = schema[key];
 
       // Return when the row contains only the empty string

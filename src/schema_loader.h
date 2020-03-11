@@ -3,6 +3,12 @@
 #include<string>
 #include<map>
 
-std::map<std::string, int> schema_loader(std::string schema_name);
+struct TableSchema
+{
+  std::string tableName;
+  std::map<std::string, int> columnKeys;
+};
+
+TableSchema schema_loader(std::string tableName);
 
 #endif

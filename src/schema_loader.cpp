@@ -4,29 +4,33 @@
 // Notably, the code below does not mark foreign keys and primary
 // keys as such.
 
-std::map<std::string, int> schema_loader(std::string schema_name) {
-  std::map<std::string,int> schema;
+TableSchema schema_loader(std::string tableName){
+  TableSchema schema;
+  std::map<std::string, int> colKeys;
 
-  if(schema_name == "movies") {
-        schema = {
+  if(tableName == "movies") {
+      colKeys = {
         { "movieId", 0 },
         { "title",   1 },
         { "genres",  2 }
       };
-  } else if(schema_name == "ratings") {
-      schema = {
+  } else if(tableName == "ratings") {
+      colKeys = {
         { "userId", 0 },
         { "movieId", 1 },
         { "rating", 2 },
         { "timestamp", 3}
       };
-  } else if(schema_name == "test_data") {
-      schema = {
+  } else if(tableName == "test_data") {
+      colKeys = {
         { "movieId", 0 },
         { "title",   1 },
         { "genres",  2 }
       };
   };
 
+  schema.tableName = tableName;
+  schema.columnKeys = colKeys;
+
   return schema;
-}
+};

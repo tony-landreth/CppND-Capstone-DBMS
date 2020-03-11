@@ -22,7 +22,8 @@ std::vector<std::string> Projection::next(){
     return row;
 
   tableName = sel_->tableName;
-  std::map<std::string,int> schema = schema_loader(tableName);
+  TableSchema tblSchema = schema_loader(tableName);
+  std::map<std::string,int> schema = tblSchema.columnKeys;
 
   for(int i = 0; i < column_names_.size(); i++) {
     std::string column_name = column_names_[i];

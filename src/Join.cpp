@@ -18,8 +18,10 @@ std::vector<std::string> Join::next() {
   // TODO: The schema is only useful when you haven't projected to a smaller number of columns
   // TODO: Or expanded the number of columns via JOIN
   // TODO: You need to be able to remap the schema with each expansion or contraction of columns
-  std::map<std::string, int> r_schema = schema_loader(r_table_name);
-  std::map<std::string, int> s_schema = schema_loader(s_table_name);
+  TableSchema rTblSchema = schema_loader(r_table_name);
+  TableSchema sTblSchema = schema_loader(s_table_name);
+  std::map<std::string, int> r_schema = rTblSchema.columnKeys;
+  std::map<std::string, int> s_schema = sTblSchema.columnKeys;
 
   // Rewind the S relation so that a full table scan is possible
   s_->rewind();
