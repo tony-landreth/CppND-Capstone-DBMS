@@ -79,7 +79,7 @@ class ProjectionTest : public ::testing::Test {
   protected:
     std::map<std::string,int> schema = schema_loader("movies");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
-    std::vector<std::string> col_names{ "title" };
+    std::vector<std::string> col_names{ "title", "genres" };
     std::vector<std::string> where;
 };
 
@@ -92,7 +92,7 @@ TEST_F(ProjectionTest, TestNext) {
   projection.next();
   projection.next();
   std::vector<std::string> row = projection.next();
-  std::vector<std::string> expectation{ "The Fall" };
+  std::vector<std::string> expectation{ "The Fall", "Adventure|Fantasy" };
   EXPECT_EQ(row, expectation);
 }
 
@@ -105,7 +105,7 @@ TEST_F(ProjectionTest, Rewind) {
   projection.next();
   projection.next();
   std::vector<std::string> row = projection.next();
-  std::vector<std::string> expectation{ "The Fall" };
+  std::vector<std::string> expectation{ "The Fall", "Adventure|Fantasy" };
   EXPECT_EQ(row, expectation);
 
   // Rewind to the first row of the table
