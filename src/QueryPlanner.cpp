@@ -54,18 +54,13 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
   }
 
   if(root.leaves.size() > 2){
-    std::cout << "thirdNode exists!\n";
     TokenTree thirdNode = root.leaves[2];
-
-    if(thirdNode.token == "JOIN") {
-      std::string tbl = thirdNode.leaves[0].token;
-      std::string on = thirdNode.leaves[1].token;
-      std::string rKey = thirdNode.leaves[2].token;
-      std::string eq = thirdNode.leaves[3].token;
-      std::string sKey = thirdNode.leaves[4].token;
-      std::cout << "sKey " << sKey << std::endl;
-      std::vector<std::string> jnClause{ tbl, rKey, sKey };
-      queryData_.insert({"JOIN", jnClause});
+    if(thirdNode.token == "WHERE") {
+      std::string v1 = thirdNode.leaves[0].token;
+      std::string eq = thirdNode.leaves[1].token;
+      std::string v2 = thirdNode.leaves[2].token;
+      std::vector<std::string> whrClause{ v1, eq, v2 };
+      queryData_.insert({"WHERE", whrClause});
     }
   }
 
@@ -122,7 +117,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // Build Join Node
   if(jnPresent_ ){
     std::vector<std::string> jnParams = queryData_["JOIN"];
-    //TODO: This shouldn't work, b/c you need unique pointers for the other nodes
     // Build sFileScan Node
     std::string sTblName = jnParams[0];
     std::vector<std::string> sSelCols{ jnParams[1], jnParams[2] };
@@ -136,8 +130,10 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ));
     std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), sSelCols);
 
+    std::cout << "frmTableSize " << frmTableSize << std::endl;
     for(int i = 0; i < frmTableSize; i++){
       row = jn->next();
+
       if(row.size() > 0) {
         results.push_back(row);
       }
