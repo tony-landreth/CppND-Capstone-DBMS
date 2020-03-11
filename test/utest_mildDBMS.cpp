@@ -96,6 +96,27 @@ TEST_F(ProjectionTest, TestNext) {
   EXPECT_EQ(row, expectation);
 }
 
+TEST_F(ProjectionTest, Rewind) {
+  fs->scanFile();
+  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ));
+  Projection projection{col_names, std::move( select )};
+
+  // Advance to a row where title = "The Fall"
+  projection.next();
+  projection.next();
+  std::vector<std::string> row = projection.next();
+  std::vector<std::string> expectation{ "The Fall" };
+
+  EXPECT_EQ(row, expectation);
+
+  projection.rewind();
+
+  row = projection.next();
+  row = projection.next();
+  row = projection.next();
+  EXPECT_EQ(row, expectation);
+}
+
 // Tests for Join
 class JoinTest : public ::testing::Test {
   protected:
@@ -116,11 +137,16 @@ TEST_F(JoinTest, TestNext) {
 
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
   //TODO: this is ugly, fix it
-  std::vector<std::string> result = join.next();
+  std::vector<std::string> result;
+  join.next();
   join.next();
   result = join.next();
   std::vector<std::string> expectation{ "The Fall", "The Fall" };
   EXPECT_EQ(result, expectation);
+
+  std::map<std::string, int> expuct;
+  expuct = { {"title", 1} };
+  EXPECT_EQ(join.jSchema, expuct);
 }
 
 // Tests for Tokenizer
@@ -248,16 +274,11 @@ TEST_F(ComplexQueryTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::string> expectedResult{ "The Fall" };
+  std::vector<std::vector<std::string> > expectedResult{ { "title" }, { "The Fall" } };
   std::vector<std::vector<std::string> > result = qp.run();
 
-  if(result.size() > 0) {
-    row = result[0];
-  }
-
-  EXPECT_EQ(row, expectedResult);
+  EXPECT_EQ(result, expectedResult);
 }
-//TODO: Queries with JOINS are next
 
 class JoinQueryTest : public ::testing::Test {
   protected:
@@ -282,4 +303,26 @@ TEST_F(JoinQueryTest, Run) {
 
   EXPECT_EQ(result, expectedResult);
 }
+/*
+class SelfJoinProjectionWhereQueryTest : public ::testing::Test {
+  protected:
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT title FROM movies JOIN movies ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"};
+    std::vector<char*> argv;
+    std::vector<std::string> row;
+    std::vector<std::vector<std::string> >expectedResult{
+      { "title", "title" },
+      { "Sudden Death (1995)", "Sudden Death (1995)" }
+    };
+};
 
+TEST_F(SelfJoinProjectionWhereQueryTest, Run) {
+  for (const auto& arg : arguments)
+      argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  std::vector<std::vector<std::string> > result = qp.run();
+
+  EXPECT_EQ(result, expectedResult);
+}
+*/
