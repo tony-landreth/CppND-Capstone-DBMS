@@ -4,7 +4,7 @@
 #include<string>
 #include<map>
 
-class Projection : PlanNode
+class Projection : public PlanNode
 {
   public:
     Projection(const std::vector<std::string> column_names, const std::unique_ptr<Selection> sel);

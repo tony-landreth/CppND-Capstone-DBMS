@@ -5,7 +5,10 @@ Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> f
 
 std::vector<std::string> Selection::next()
 {
-  tableName = fs->tableName;
+  schema = fs->schema;
+  tableName = schema.tableName;
+
+  //TODO: add tableSize to schema
   tableSize = fs->tableSize;
 
   std::vector<std::string> empty_row;

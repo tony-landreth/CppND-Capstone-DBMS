@@ -21,13 +21,13 @@ std::vector<std::string> Projection::next(){
   if(column_names_[0] == "*")
     return row;
 
-  tableName = sel_->tableName;
-  TableSchema tblSchema = schema_loader(tableName);
-  std::map<std::string,int> schema = tblSchema.columnKeys;
+  schema = sel_->schema;
+  tableName = schema.tableName;
+  std::map<std::string,int> colKeys = schema.columnKeys;
 
   for(int i = 0; i < column_names_.size(); i++) {
     std::string column_name = column_names_[i];
-    int rowID = schema[column_name];
+    int rowID = colKeys[column_name];
     result.push_back(row[rowID]);
   }
 

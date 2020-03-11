@@ -13,7 +13,6 @@ class FileScan : public PlanNode
   public:
     FileScan(std::string tableName);
     std::vector<std::string> next();
-    std::map<std::string,int> schema;
     std::string tableName;
     void scanFile();
     int tableSize;

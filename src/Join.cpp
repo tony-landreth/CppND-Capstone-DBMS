@@ -12,16 +12,17 @@ std::vector<std::string> Join::next() {
   std::string r_key = keys_[0];
   std::string s_key = keys_[1];
 
-  std::string r_table_name = r_->tableName;
-  std::string s_table_name = s_->tableName;
+  TableSchema rSchema = r_->schema;
+  TableSchema sSchema = s_->schema;
+
+  std::string r_table_name = rSchema.tableName;
+  std::string s_table_name = sSchema.tableName;
 
   // TODO: The schema is only useful when you haven't projected to a smaller number of columns
   // TODO: Or expanded the number of columns via JOIN
   // TODO: You need to be able to remap the schema with each expansion or contraction of columns
-  TableSchema rTblSchema = schema_loader(r_table_name);
-  TableSchema sTblSchema = schema_loader(s_table_name);
-  std::map<std::string, int> r_schema = rTblSchema.columnKeys;
-  std::map<std::string, int> s_schema = sTblSchema.columnKeys;
+  std::map<std::string, int> rColKeys = rSchema.columnKeys;
+  std::map<std::string, int> sColKeys = sSchema.columnKeys;
 
   // Rewind the S relation so that a full table scan is possible
   s_->rewind();
@@ -30,8 +31,8 @@ std::vector<std::string> Join::next() {
   std::vector<std::string> s_row = s_->next();
 
   //TODO: rename these to foreign key
-  int r_colID = r_schema[r_key];
-  int s_colID = s_schema[s_key];
+  int r_colID = rColKeys[r_key];
+  int s_colID = sColKeys[s_key];
 
   // Use these variables to determine when the foreign keys match between two tables
   std::string r_col;
