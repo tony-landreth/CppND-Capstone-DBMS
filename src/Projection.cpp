@@ -6,7 +6,13 @@ Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<Se
 std::vector<std::string> Projection::next(){
   std::vector<std::string> result;
   std::vector<std::string> row = sel_->next();
+
   tableSize = sel_->tableSize;
+  schema = sel_->schema;
+  tableName = schema.tableName;
+  std::map<std::string,int> colKeys = schema.columnKeys;
+  std::map<std::string,int> newColKeys;
+
 
   if(row.size() == 0)
     return result;
@@ -20,11 +26,6 @@ std::vector<std::string> Projection::next(){
 
   if(column_names_[0] == "*")
     return row;
-
-  schema = sel_->schema;
-  tableName = schema.tableName;
-  std::map<std::string,int> colKeys = schema.columnKeys;
-  std::map<std::string,int> newColKeys;
 
   for(int i = 0; i < column_names_.size(); i++) {
     std::string column_name = column_names_[i];
