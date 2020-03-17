@@ -36,7 +36,8 @@ class SelectionTest : public ::testing::Test {
 
 TEST_F(SelectionTest, TestNext) {
   fs->scanFile();
-  Selection select{ where, std::move( fs )};
+  TableSchema sch = fs->schema;
+  Selection select{ where, std::move( fs ), sch };
   // Advance to a row where title = "The Fall"
   select.next();
   select.next();
@@ -54,7 +55,8 @@ class StarTest : public ::testing::Test {
 
 TEST_F(StarTest, TestSelectStarNext) {
   fs->scanFile();
-  Selection select{ where, std::move( fs )};
+  TableSchema sch = fs->schema;
+  Selection select{ where, std::move( fs ), sch };
 
   std::vector<std::vector<std::string> > expectedResult{ 
     { "movieId", "title", "genres" },
@@ -77,7 +79,7 @@ TEST_F(StarTest, TestSelectStarNext) {
 // Tests for Projection
 class ProjectionTest : public ::testing::Test {
   protected:
-    TableSchema tblSchema = schema_loader("movies");
+    TableSchema tblSchema = schema_loader("test_data");
     std::map<std::string,int> schema = tblSchema.columnKeys;
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
     std::vector<std::string> col_names{ "title", "genres" };
@@ -86,8 +88,8 @@ class ProjectionTest : public ::testing::Test {
 
 TEST_F(ProjectionTest, TestNext) {
   fs->scanFile();
-  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ));
-  Projection projection{col_names, std::move( select )};
+  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), tblSchema );
+  Projection projection{col_names, std::move( select ), tblSchema };
 
   // Advance to a row where title = "The Fall"
   projection.next();
@@ -99,8 +101,9 @@ TEST_F(ProjectionTest, TestNext) {
 
 TEST_F(ProjectionTest, Rewind) {
   fs->scanFile();
-  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ));
-  Projection projection{col_names, std::move( select )};
+  TableSchema sch = fs->schema;
+  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), tblSchema );
+  Projection projection{col_names, std::move( select ), tblSchema};
 
   // Advance to a row where title = "The Fall"
   projection.next();
@@ -125,25 +128,33 @@ class JoinTest : public ::testing::Test {
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
     std::vector<std::string> col_names{  "movieId", "title", };
     std::vector<std::string> keys{ "movieId", "movieId" };
+    TableSchema tblSchema = schema_loader("test_data");
 };
 
 TEST_F(JoinTest, TestNext) {
   std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data");
   mfs->scanFile();
+  TableSchema mfsSchema = mfs->schema;
   std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data");
+  TableSchema rfsSchema = rfs->schema;
   rfs->scanFile();
-  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ));
-  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ));
-  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ));
-  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ));
+  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ), tblSchema);
+  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ), tblSchema);
+  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ), tblSchema);
+  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ), tblSchema);
 
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
-  std::vector<std::string> result;
+  std::vector<std::vector<std::string> > result;
   // Advance to the relevant row
-  join.next();
-  join.next();
-  result = join.next();
-  std::vector<std::string> expectation{ "2", "The Fall", "2", "The Fall" };
+  int tableSize = 4;
+  for(int i = 0; i < tableSize; i++){
+    std::vector<std::string> r = join.next();
+
+    if(r.size() > 0) {
+      result.push_back(r);
+    }
+  }
+  std::vector<std::vector<std::string> > expectation{ { "movieId", "title", "movieId", "title" }, { "2", "The Fall", "2", "The Fall" } };
   EXPECT_EQ(result, expectation);
 }
 

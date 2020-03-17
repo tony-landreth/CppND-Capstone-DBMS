@@ -15,14 +15,11 @@ std::vector<std::string> Join::next() {
   TableSchema rSchema = r_->schema;
   TableSchema sSchema = s_->schema;
 
-  std::string r_table_name = rSchema.tableName;
-  std::string s_table_name = sSchema.tableName;
-  
-  // Rewind the S relation so that a full table scan is possible
-  s_->rewind();
-
   // Get the next row from each node
   std::vector<std::string> r_row = r_->next();
+
+  // Rewind the S relation so that a full table scan is possible
+  s_->rewind();
   std::vector<std::string> s_row = s_->next();
 
 
@@ -31,7 +28,7 @@ std::vector<std::string> Join::next() {
   std::string s_col;
 
   // If this is the first call to next(), return title row
-  // and build jSchema
+  // and construct a schema based on the incoming nodes jSchema
   if(rowIdx == 0) {
     rowIdx++;
     std::vector<std::string> result_row;
@@ -59,6 +56,7 @@ std::vector<std::string> Join::next() {
   if(r_row.size() > 0) {
     r_col = r_row[r_colID];
   }
+
 
   if(r_col.size() > 0) {
     for(int i = 0; i < sTableSize; i++) {

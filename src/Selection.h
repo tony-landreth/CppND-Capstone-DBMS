@@ -7,7 +7,8 @@
 class Selection : public PlanNode
 {
   public:
-    Selection(const std::vector<std::string> triple, const std::unique_ptr<FileScan> fs);
+    Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs, TableSchema sch) : where(where), fs(std::move(fs)), schema(sch) {};
+    TableSchema schema;
     std::vector<std::string> where;
     std::vector<std::string> next();
     void rewind(){};

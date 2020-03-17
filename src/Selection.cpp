@@ -1,11 +1,8 @@
 #include "Selection.h"
 #include "schema_loader.h"
 
-Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs) : where(where), fs(std::move(fs)) {}
-
 std::vector<std::string> Selection::next()
 {
-  schema = fs->schema;
   tableName = schema.tableName;
   keys = where;
 

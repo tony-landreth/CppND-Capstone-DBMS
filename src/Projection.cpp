@@ -1,18 +1,14 @@
 #include "Projection.h"
 #include "schema_loader.h"
 
-Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<Selection> sel) : column_names_(column_names), sel_(std::move( sel )) {}
-
 std::vector<std::string> Projection::next(){
   std::vector<std::string> result;
   std::vector<std::string> row = sel_->next();
 
   tableSize = sel_->tableSize;
-  schema = sel_->schema;
   tableName = schema.tableName;
   std::map<std::string,int> colKeys = schema.columnKeys;
   std::map<std::string,int> newColKeys;
-
 
   if(row.size() == 0)
     return result;
@@ -34,24 +30,21 @@ std::vector<std::string> Projection::next(){
     newColKeys[column_name] = i;
   }
 
-  // Now that you've projected into a lower-dimensional space, update the Node's schema
-  schema.columnKeys = newColKeys;
+  // Now that you've projected into a lower-dimensional space, the file schema is no longer useful
 
   return result;
 }
 
 void Projection::rewind(){
-  // Call next() to ensure tableName gets set
-  next();
-  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(tableName);
+  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema.tableName);
   fs->scanFile();
 
   if(sel_->keys.size() > 0) {
-    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs));
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs), schema);
     sel_ = std::move(s);
   } else {
   std::vector<std::string> where;
-    std::unique_ptr<Selection> s = std::make_unique<Selection>(where, std::move(fs));
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(where, std::move(fs), schema);
     sel_ = std::move(s);
   }
 }

@@ -109,7 +109,8 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // Build SELECTION Node
   where = queryData_["WHERE"];
   std::vector<std::string> selCols = queryData_["SELECT"];
-  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs));
+  TableSchema frmFsSchema = frmFs->schema;
+  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), frmFsSchema);
 
   // Build Projection Node
   std::unique_ptr<Projection> prjR;
@@ -122,9 +123,9 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     // TODO: create a separate selCols, i.e. rSelCols and sSeCols
     // So you can handle foreign keys with different names
     selCols.push_back(jnKeys[0]);
-    prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+    prjR = std::make_unique<Projection>(selCols, std::move( sel ), frmFsSchema);
   } else {
-    prjR = std::make_unique<Projection>(selCols, std::move( sel ));
+    prjR = std::make_unique<Projection>(selCols, std::move( sel ), frmFsSchema);
   }
 
   // Build Join Node
@@ -137,10 +138,10 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     sFrmFs->scanFile();
 
     // Build sSelection Node
-    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs));
+    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs), frmFsSchema);
 
     // Build sProjection
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ));
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ), frmFsSchema);
     std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys);
 
     for(int i = 0; i < frmTableSize; i++){
