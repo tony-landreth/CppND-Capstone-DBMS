@@ -11,6 +11,7 @@ class PlanNode
     virtual void rewind() = 0;
     TableSchema schema;
     int tableSize; //TODO: move tableSize into TableSchema
+    std::vector<std::string> keys;
 };
 
 #endif

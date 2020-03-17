@@ -14,6 +14,7 @@ class Selection : public PlanNode
     std::unique_ptr<FileScan> fs;
     std::string tableName;
     int tableSize;
+    std::vector<std::string> keys;
 
   private:
     int rowIdx = 0;

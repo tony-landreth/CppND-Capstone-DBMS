@@ -7,6 +7,7 @@ std::vector<std::string> Selection::next()
 {
   schema = fs->schema;
   tableName = schema.tableName;
+  keys = where;
 
   //TODO: add tableSize to schema
   tableSize = fs->tableSize;

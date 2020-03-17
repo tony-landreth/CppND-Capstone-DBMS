@@ -41,11 +41,13 @@ std::vector<std::string> Projection::next(){
 }
 
 void Projection::rewind(){
-  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(sel_->fs->tableName);
+  // Call next() to ensure tableName gets set
+  next();
+  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(tableName);
   fs->scanFile();
 
-  if(sel_->where.size() > 0) {
-    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->where, std::move(fs));
+  if(sel_->keys.size() > 0) {
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs));
     sel_ = std::move(s);
   } else {
   std::vector<std::string> where;
