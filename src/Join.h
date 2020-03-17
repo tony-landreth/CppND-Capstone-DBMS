@@ -19,6 +19,7 @@ class Join : public PlanNode
     // which undermines the schema used as table read time. jSchema is used to produce a sort of virtual
     // schema to represent the ordering of the joined data in memory.
     std::map<std::string,int> jSchema;
+    std::vector<int> foreignKeys;
 
   private:
     std::unique_ptr<Projection> r_;

@@ -123,7 +123,7 @@ TEST_F(ProjectionTest, Rewind) {
 class JoinTest : public ::testing::Test {
   protected:
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
-    std::vector<std::string> col_names{ "title" };
+    std::vector<std::string> col_names{  "movieId", "title", };
     std::vector<std::string> keys{ "movieId", "movieId" };
 };
 
@@ -143,7 +143,7 @@ TEST_F(JoinTest, TestNext) {
   join.next();
   join.next();
   result = join.next();
-  std::vector<std::string> expectation{ "The Fall", "The Fall" };
+  std::vector<std::string> expectation{ "2", "The Fall", "2", "The Fall" };
   EXPECT_EQ(result, expectation);
 }
 

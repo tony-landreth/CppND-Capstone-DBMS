@@ -17,7 +17,7 @@ std::vector<std::string> Join::next() {
 
   std::string r_table_name = rSchema.tableName;
   std::string s_table_name = sSchema.tableName;
-
+  
   std::map<std::string, int> rColKeys = rSchema.columnKeys;
   std::map<std::string, int> sColKeys = sSchema.columnKeys;
 
@@ -35,10 +35,6 @@ std::vector<std::string> Join::next() {
   std::string r_col;
   std::string s_col;
 
-  if(r_row.size() > 0) {
-    r_col = r_row[r_colID];
-  }
-
   // If this is the first call to next(), return title row
   // and build jSchema
   if(rowIdx == 0) {
@@ -47,15 +43,26 @@ std::vector<std::string> Join::next() {
     std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));
     std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
 
-    /*
-    // Note that you'll end up dropping keys for identically named columns in the block below.
-    // Self joins will not be supported, until column aliasing is implemented
-    for(int i = 0; i < result_row.size(); i++){
-      jSchema[result_row[i]] = i;
+    // Build the column index for foreign keys
+    // Allowing foreign keys to have the same name
+    std::vector<int> keyMap(result_row.size(), 0);
+    for(int i = 0; i < keys_.size(); i++){
+      for(int j = 0; j < result_row.size(); j++){
+        if(( keyMap[j] == 0 ) && ( keys_[i] == result_row[j] )){
+          foreignKeys.push_back(i);
+          keyMap[j] = 1;
+        }
+      }
     }
-    */
+
+    r_colID = foreignKeys[0];
+    s_colID = foreignKeys[1];
 
     return result_row;
+  }
+
+  if(r_row.size() > 0) {
+    r_col = r_row[r_colID];
   }
 
   if(r_col.size() > 0) {
