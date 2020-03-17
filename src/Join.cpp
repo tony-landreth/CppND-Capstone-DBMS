@@ -19,8 +19,8 @@ std::vector<std::string> Join::next() {
   std::vector<std::string> r_row = r_->next();
 
   // Rewind the S relation so that a full table scan is possible
-  s_->rewind();
   std::vector<std::string> s_row = s_->next();
+  s_->rewind();
 
 
   // Use these variables to determine when the foreign keys match between two tables

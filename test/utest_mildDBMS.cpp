@@ -145,8 +145,8 @@ TEST_F(JoinTest, TestNext) {
 
   Join join( std::move( mprojection ), std::move( rprojection ), keys );
   std::vector<std::vector<std::string> > result;
-  // Advance to the relevant row
-  int tableSize = 4;
+
+  int tableSize = 5;
   for(int i = 0; i < tableSize; i++){
     std::vector<std::string> r = join.next();
 
