@@ -18,18 +18,13 @@ std::vector<std::string> Join::next() {
   std::string r_table_name = rSchema.tableName;
   std::string s_table_name = sSchema.tableName;
   
-  std::map<std::string, int> rColKeys = rSchema.columnKeys;
-  std::map<std::string, int> sColKeys = sSchema.columnKeys;
-
   // Rewind the S relation so that a full table scan is possible
   s_->rewind();
 
+  // Get the next row from each node
   std::vector<std::string> r_row = r_->next();
   std::vector<std::string> s_row = s_->next();
 
-  //TODO: rename these to foreign key
-  int r_colID = rColKeys[r_key];
-  int s_colID = sColKeys[s_key];
 
   // Use these variables to determine when the foreign keys match between two tables
   std::string r_col;
@@ -55,11 +50,11 @@ std::vector<std::string> Join::next() {
       }
     }
 
-    r_colID = foreignKeys[0];
-    s_colID = foreignKeys[1];
-
     return result_row;
   }
+
+  int r_colID = foreignKeys[0];
+  int s_colID = foreignKeys[1];
 
   if(r_row.size() > 0) {
     r_col = r_row[r_colID];
