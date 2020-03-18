@@ -143,7 +143,7 @@ TEST_F(JoinTest, TestNext) {
   std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ), tblSchema);
   std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ), tblSchema);
 
-  Join join( std::move( mprojection ), std::move( rprojection ), keys );
+  Join join( std::move( mprojection ), std::move( rprojection ), keys, tblSchema, tblSchema);
   std::vector<std::vector<std::string> > result;
 
   int tableSize = 5;

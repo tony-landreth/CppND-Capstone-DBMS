@@ -1,4 +1,5 @@
 #include "QueryPlanner.h"
+#include <algorithm>
 
 QueryPlanner::QueryPlanner(int argc, char** argv) : argc_(argc), argv_(argv) {};
 
@@ -107,9 +108,29 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   frmTableSize = frmFs->tableSize;
 
   // Build SELECTION Node
+  TableSchema frmFsSchema = frmFs->schema;
   where = queryData_["WHERE"];
   std::vector<std::string> selCols = queryData_["SELECT"];
-  TableSchema frmFsSchema = frmFs->schema;
+
+  if(selCols[0] == "*"){
+    std::vector<std::string> allCols;
+    std::vector<int> allIdxs;
+    std::map<int, std::string> revMap;
+    std::map<std::string, int> colKeys = frmFsSchema.columnKeys;
+
+    for(const auto &x: colKeys){
+      revMap[x.second] = x.first;
+      allIdxs.push_back(x.second);
+    }
+
+    sort(allIdxs.begin(), allIdxs.end());
+    for(int i = 0; i < allIdxs.size(); i++){
+      allCols.push_back(revMap[i]);
+    }
+
+    selCols = allCols;
+  }
+
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), frmFsSchema);
 
   // Build Projection Node
@@ -122,7 +143,13 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
     // TODO: create a separate selCols, i.e. rSelCols and sSeCols
     // So you can handle foreign keys with different names
-    selCols.push_back(jnKeys[0]);
+
+    for(std::string k : jnKeys){
+      if(std::find(selCols.begin(), selCols.end(), k) == selCols.end()){
+        selCols.push_back(jnKeys[0]);
+      }
+    } 
+
     prjR = std::make_unique<Projection>(selCols, std::move( sel ), frmFsSchema);
   } else {
     prjR = std::make_unique<Projection>(selCols, std::move( sel ), frmFsSchema);
@@ -142,9 +169,18 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
     // Build sProjection
     std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ), frmFsSchema);
-    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys);
+    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, frmFsSchema, frmFsSchema);
+
+    std::vector<std::string> fixtureKeys{ "title" };
+    TableSchema jnSchema;
+    jnSchema.tableName = "virtual";
+    jnSchema.tableSize = 6;
+
+    // You need this version of sansForeignKeys for SELECT * queries, and fixtureKeys and jnSchema otherwise
+    //std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(fixtureKeys, std::move( jn ), jnSchema);
 
     for(int i = 0; i < frmTableSize; i++){
+      //row = sansForeignKeys->next();
       row = jn->next();
 
       if(row.size() > 0) {

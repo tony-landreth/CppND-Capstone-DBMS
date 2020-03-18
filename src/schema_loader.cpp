@@ -7,6 +7,7 @@
 TableSchema schema_loader(std::string tableName){
   TableSchema schema;
   std::map<std::string, int> colKeys;
+  int tableSize;
 
   if(tableName == "movies") {
       colKeys = {
@@ -14,6 +15,7 @@ TableSchema schema_loader(std::string tableName){
         { "title",   1 },
         { "genres",  2 }
       };
+      tableSize = 100;
   } else if(tableName == "ratings") {
       colKeys = {
         { "userId", 0 },
@@ -21,12 +23,14 @@ TableSchema schema_loader(std::string tableName){
         { "rating", 2 },
         { "timestamp", 3}
       };
+      tableSize = 41702;
   } else if(tableName == "test_data") {
       colKeys = {
         { "movieId", 0 },
         { "title",   1 },
         { "genres",  2 }
       };
+      tableSize = 6;
   };
 
   schema.tableName = tableName;

@@ -8,6 +8,7 @@ std::vector<std::string> Selection::next()
 
   //TODO: add tableSize to schema
   tableSize = fs->tableSize;
+  std::cout << "tableSize " << tableSize;
 
   std::vector<std::string> empty_row;
   std::vector<std::string> row;

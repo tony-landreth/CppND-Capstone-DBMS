@@ -6,6 +6,7 @@
 struct TableSchema
 {
   std::string tableName;
+  int tableSize;
   std::map<std::string, int> columnKeys;
 };
 

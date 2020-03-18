@@ -2,12 +2,12 @@
 #include "Join.h"
 #include "schema_loader.h"
 
-Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k) : r_(std::move( r )), s_(std::move( s )), keys_(k) {
-}
 
+Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, TableSchema rsch, TableSchema ssch) : r_(std::move( r )), s_(std::move( s )), keys_(k), r_schema_(rsch), s_schema_(ssch) {}
 std::vector<std::string> Join::next() {
-  rTableSize = r_->tableSize;
-  sTableSize = s_->tableSize;
+  rTableSize = r_schema_.tableSize;
+  sTableSize = s_schema_.tableSize;
+
   std::vector<std::string> result;
   std::string r_key = keys_[0];
   std::string s_key = keys_[1];
@@ -30,7 +30,9 @@ std::vector<std::string> Join::next() {
   // If this is the first call to next(), return title row
   // and construct a schema based on the incoming nodes jSchema
   if(rowIdx == 0) {
-    rowIdx++;
+    rowIdx++; // Log that you've encountered the header rows for R and S
+
+    // Form the header rows from R and S
     std::vector<std::string> result_row;
     std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));
     std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
@@ -57,6 +59,8 @@ std::vector<std::string> Join::next() {
     r_col = r_row[r_colID];
   }
 
+  std::cout << "S ROW SIZE " << s_row.size() << " R ROW SIZE " << r_row.size() << std::endl;
+  std::cout << "S COLID " << s_colID << " R COLID " << r_colID << std::endl;
 
   if(r_col.size() > 0) {
     for(int i = 0; i < sTableSize; i++) {
