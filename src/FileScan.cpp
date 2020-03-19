@@ -1,18 +1,54 @@
 #include "FileScan.h"
 
-FileScan::FileScan(std::string tableName, std::map<std::string,int> schema) : tableName(tableName)
-{
+FileScan::FileScan(std::string tableName) : tableName(tableName){
+  tableSize = 0;
+};
+
+
+//TODO: scanFile should run on init
+void FileScan::scanFile() {
+  schema = schema_loader(tableName);
+
   std::stringstream fileName;
-  fileName << "../test/data/" << tableName << ".csv";
+  fileName << "../test/" << tableName << ".csv";
   fileStream_.open(fileName.str());
+
+  if(!fileStream_) {
+    std::cerr << "No table named " << tableName << std::endl;
+    exit(1);
+  }
+
+  std::vector<std::string> row;
+  row = next_();
+
+  while(row.size() > 0) {
+    relation_.push_back(row);
+    row = next_();
+    tableSize++;
+  }
+
+  fileStream_.close();
+
+  idx_for_next_ = 0;
 }
 
-std::vector<std::vector<std::string> > FileScan::next() {
+std::vector<std::string> FileScan::next() {
+  std::vector<std::string> empty_vector;
+  std::vector<std::string> row = relation_[idx_for_next_];
+  idx_for_next_++;
+
+  if(idx_for_next_ >= relation_.size()) {
+    return empty_vector;
+  }
+
+  return row;
+}
+
+std::vector<std::string> FileScan::next_() {
   std::vector<std::string> cols;
   std::string row;
   std::vector<std::string> result_row;
-  std::vector<std::vector<std::string> > result;
-
+  std::vector<std::string> result;
 
   if(fileStream_) {
     getline(fileStream_, row);
@@ -59,8 +95,7 @@ std::vector<std::vector<std::string> > FileScan::next() {
       result_row[numCols] = lastEntry;
     }
 
-    result.push_back(result_row);
-    return result;
+    return result_row;
   }
 
   //Return empty vector if there's no data

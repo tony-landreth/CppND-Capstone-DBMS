@@ -1,33 +1,82 @@
 #include "Projection.h"
 #include "schema_loader.h"
 
-Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<Selection> sel) : column_names_(column_names), sel_(std::move( sel )) {}
+Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, TableSchema sch) : column_names_(column_names), sel_(std::move( sel )), schema(sch) {};
 
-std::vector<std::vector<std::string> > Projection::next(){
-  std::vector<std::vector<std::string> > result;
-  std::vector<std::vector<std::string> > relation = sel_->next();
+std::vector<std::string> Projection::next(){
 
-  if(relation.size() == 0) {
-    return result;
-  }
-  std::vector<std::string> row = relation[0];
+  std::vector<std::string> result;
+  std::vector<std::string> row = sel_->next();
 
-  std::vector<std::string> col_vals;
-  tableName = sel_->tableName;
-  std::map<std::string,int> schema = schema_loader(tableName);
-  for(int i = 0; i < column_names_.size(); i++) {
+  tableSize = sel_->tableSize;
+  tableName = schema.tableName;
 
-    std::string column_name = column_names_[i];
-    int rowID = schema[column_name];
+  std::map<std::string,int> colMap;
+  std::vector<std::string> colHeaders;
 
-    if(row.size() != 0) {
-      col_vals.push_back(row[rowID]);
-    } else {
-      col_vals.push_back("");
+
+  if(tableName == "virtual"){
+    if(rowIdx_ == 0){
+      rowIdx_++;
+
+      // To handle columns with the same name
+      // Track whether an index has been taken
+      std::vector<int> selColMap(row.size(), -1);
+
+      // Match each column name to its position in the header row
+      for(int i = 0; i < column_names_.size(); i++){
+        for(int j = 0; j < row.size(); j++){
+          if(( selColMap[j] == -1 ) && ( column_names_[i] == row[j] )){
+            selColMap[j] = j;
+          }
+        }
+      }
+      // Only keep an index in selColMap if it belongs to a selected column
+      for(int i : selColMap) {
+        if(i != -1){
+          colKeys.push_back(i);
+        }
+      }
     }
+  } else {
+    if(rowIdx_ == 0){
+      rowIdx_++;
+      colMap = schema.columnKeys;
 
-    result.push_back(col_vals);
+      for(int i = 0; i < column_names_.size(); i++){
+        std::string col_name = column_names_[i];
 
+        int idx = colMap[col_name];
+        colKeys.push_back(idx);
+      }
+    }
   }
+
+  if(row.size() == 0)
+    return result;
+
+  if(row[0].size() == 0)
+    return result;
+
+  for(int i = 0; i < colKeys.size(); i++) {
+    int rowID = colKeys[i];
+    result.push_back(row[rowID]);
+  }
+
+  // Now that you've projected into a lower-dimensional space, the file schema is no longer useful
   return result;
+}
+
+void Projection::rewind(){
+  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema.tableName);
+  fs->scanFile();
+
+  if(sel_->keys.size() > 0) {
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs), schema);
+    sel_ = std::move(s);
+  } else {
+  std::vector<std::string> where;
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(where, std::move(fs), schema);
+    sel_ = std::move(s);
+  }
 }

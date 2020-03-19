@@ -1,28 +1,41 @@
 #include "schema_loader.h"
 
-std::map<std::string, int> schema_loader(std::string schema_name) {
-  std::map<std::string,int> schema;
+// Hardcode the schema until write operations are implemented.
+// Notably, the code below does not mark foreign keys and primary
+// keys as such.
 
-  if(schema_name == "movies") {
-     schema = {
+TableSchema schema_loader(std::string tableName){
+  TableSchema schema;
+  std::map<std::string, int> colKeys;
+  int tableSize;
+
+  if(tableName == "movies") {
+      colKeys = {
         { "movieId", 0 },
         { "title",   1 },
         { "genres",  2 }
       };
-  } else if(schema_name == "ratings") {
-     schema = {
-       { "userId", 0 },
-       { "movieId", 1 },
-       { "rating", 2 },
-       { "timestamp", 3}
-     };
-  } else if(schema_name == "test_data") {
-     schema = {
+      tableSize = 100;
+  } else if(tableName == "ratings") {
+      colKeys = {
+        { "userId", 0 },
+        { "movieId", 1 },
+        { "rating", 2 },
+        { "timestamp", 3}
+      };
+      tableSize = 41702;
+  } else if(tableName == "test_data") {
+      colKeys = {
         { "movieId", 0 },
         { "title",   1 },
         { "genres",  2 }
       };
-  }
+      tableSize = 6;
+  };
+
+  schema.tableName = tableName;
+  schema.tableSize = tableSize;
+  schema.columnKeys = colKeys;
 
   return schema;
-}
+};
