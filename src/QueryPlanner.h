@@ -16,10 +16,19 @@
 
 class QueryPlanner{
   public:
+    // Method declarations
     QueryPlanner(int argc, char** argv);
     std::vector<std::vector<std::string> > run();
 
+    // Variable declarations
+
   private:
+    // Method declarations
+    TokenTree tokenize();
+    FileScan scanFile(std::string tableName);
+    std::map<std::string, std::vector<std::string> > buildQuery(TokenTree tt);
+
+    // Variable declarations
     char** argv_;
     int argc_;
     std::map<std::string, std::vector<std::string> > queryData_;
@@ -28,10 +37,6 @@ class QueryPlanner{
     bool selPresent_ = false;
     bool jnPresent_ = false;
     bool frmPresent_ = false;
-
-    TokenTree tokenize();
-    FileScan scanFile(std::string tableName);
-    std::map<std::string, std::vector<std::string> > buildQuery(TokenTree tt);
 };
 
 #endif

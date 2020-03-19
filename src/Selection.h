@@ -7,17 +7,23 @@
 class Selection : public PlanNode
 {
   public:
+    // Method declarations
     Selection(const std::vector<std::string> where, const std::unique_ptr<FileScan> fs, const TableSchema sch);
-    TableSchema schema;
-    std::vector<std::string> where;
     std::vector<std::string> next();
     void rewind(){};
+
+    // Variable declarations
+    TableSchema schema;
+    std::vector<std::string> where;
     std::unique_ptr<FileScan> fs;
     std::string tableName;
     int tableSize;
     std::vector<std::string> keys;
 
   private:
+    // Method declarations
+
+    // Variable declarations
     int rowIdx_ = 0;
 };
 

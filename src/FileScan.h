@@ -12,16 +12,23 @@ class FileScan : public PlanNode
 {
   public:
     FileScan(const std::string tableName);
+
+    // Method declarations
     std::vector<std::string> next();
     void rewind(){};
-    std::string tableName;
     void scanFile();
+
+    // Variable declarations
+    std::string tableName;
     int tableSize;
 
   private:
+    // Method declarations
     std::vector<std::string> next_();
-    std::ifstream fileStream_;
-    std::vector<std::vector<std::string> > relation_;
+
+    // Variable declarations
     int idx_for_next_;
+    std::vector<std::vector<std::string> > relation_;
+    std::ifstream fileStream_;
 };
 #endif
