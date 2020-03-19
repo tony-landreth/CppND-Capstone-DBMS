@@ -109,9 +109,9 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // Build SELECTION Node
   TableSchema frmFsSchema = frmFs->schema;
   where = queryData_["WHERE"];
-  std::vector<std::string> frontEndSelCols = queryData_["SELECT"];
-  std::vector<std::string> backEndSelCols = frontEndSelCols;
 
+  // Determine which columns will be displayed to the user
+  std::vector<std::string> frontEndSelCols = queryData_["SELECT"];
   if(frontEndSelCols[0] == "*"){
     std::vector<std::string> allCols;
     std::vector<int> allIdxs;
@@ -130,7 +130,8 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
     frontEndSelCols = allCols;
   }
-
+  // Collect columns required to build intermediate query results
+  std::vector<std::string> backEndSelCols = frontEndSelCols;
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), frmFsSchema);
 
   // Build Projection Node
@@ -178,10 +179,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
     //TODO: WHERE clauses reduce the S side tableSize
     jnSchema.tableSize = 6;
-
-    for(std::string st : frontEndSelCols) {
-      std::cout << "frontEndSelCols " << st << std::endl;
-    }
 
     std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(frontEndSelCols, std::move( jn ), jnSchema);
 
