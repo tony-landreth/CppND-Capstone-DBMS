@@ -30,7 +30,7 @@ TableSchema schema_loader(std::string tableName){
         { "title",   1 },
         { "genres",  2 }
       };
-      tableSize = 6;
+      tableSize = 4;
   };
 
   schema.tableName = tableName;

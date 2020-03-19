@@ -86,7 +86,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::vector<std::string> row;
   TokenTree tt = tokenize();
   std::vector<std::string> where;
-  int frmTableSize;
 
   std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tt);
   detectClauses(); // Set flags for clauses detected in queryData_
@@ -100,10 +99,10 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   // Build rFileScan Node
   std::string tblName = queryData_["FROM"][0];
-  std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(tblName);
+  TableSchema schema = schema_loader(tblName);
+  int frmTableSize = schema.tableSize;
+  std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(schema);
   frmFs->scanFile();
-  frmTableSize = frmFs->tableSize;
-  TableSchema frmFsSchema = frmFs->schema;
 
   // Build SELECTION Node
   where = queryData_["WHERE"];
@@ -114,7 +113,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::vector<std::string> allCols;
     std::vector<int> allIdxs;
     std::map<int, std::string> revMap;
-    std::map<std::string, int> colKeys = frmFsSchema.columnKeys;
+    std::map<std::string, int> colKeys = schema.columnKeys;
 
     for(const auto &x: colKeys){
       revMap[x.second] = x.first;
@@ -130,15 +129,17 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
   // Collect columns required to build intermediate query results
   std::vector<std::string> backEndSelCols = frontEndSelCols;
-  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), frmFsSchema);
+  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), schema);
 
   // Build Projection Node
   std::unique_ptr<Projection> prjR;
+  TableSchema sTblSchema;
 
   if(jnPresent_ ){
     // Add JOIN keys to projection node
     std::vector<std::string> jnParams = queryData_["JOIN"];
     std::string sTblName = jnParams[0];
+    sTblSchema = schema_loader(sTblName);
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
 
     // TODO: create a separate selCols, i.e. rSelCols and sSeCols
@@ -149,9 +150,9 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
       }
     } 
 
-    prjR = std::make_unique<Projection>(backEndSelCols, std::move( sel ), frmFsSchema);
+    prjR = std::make_unique<Projection>(backEndSelCols, std::move( sel ), schema);
   } else {
-    prjR = std::make_unique<Projection>(frontEndSelCols, std::move( sel ), frmFsSchema);
+    prjR = std::make_unique<Projection>(frontEndSelCols, std::move( sel ), schema);
   }
 
   // Build Join Node
@@ -159,16 +160,17 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::vector<std::string> jnParams = queryData_["JOIN"];
     // Build sFileScan Node
     std::string sTblName = jnParams[0];
+    sTblSchema = schema_loader(sTblName);
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
-    std::unique_ptr<FileScan> sFrmFs = std::make_unique<FileScan>(sTblName);
+    std::unique_ptr<FileScan> sFrmFs = std::make_unique<FileScan>(sTblSchema);
     sFrmFs->scanFile();
 
     // Build sSelection Node
-    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs), frmFsSchema);
+    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs), schema);
 
     // Build sProjection
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(backEndSelCols, std::move( sSel ), frmFsSchema);
-    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, frmFsSchema, frmFsSchema);
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(backEndSelCols, std::move( sSel ), schema);
+    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, schema);
 
     std::vector<std::string> fixtureKeys{ "title" };
     TableSchema jnSchema;

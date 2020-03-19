@@ -11,7 +11,7 @@
 class FileScan : public PlanNode
 {
   public:
-    FileScan(const std::string tableName);
+    FileScan(const TableSchema schema);
 
     // Method declarations
     std::vector<std::string> next();
@@ -21,6 +21,7 @@ class FileScan : public PlanNode
     // Variable declarations
     std::string tableName;
     int tableSize;
+    TableSchema schema;
 
   private:
     // Method declarations

@@ -9,7 +9,8 @@ Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::ve
 
 std::vector<std::string> Join::next() {
   rTableSize = r_schema_.tableSize;
-  sTableSize = s_schema_.tableSize;
+  // TODO: Figure out why this + 1 is relevant and refactor
+  sTableSize = s_schema_.tableSize + 1;
 
   std::vector<std::string> result;
   std::string r_key = keys_[0];

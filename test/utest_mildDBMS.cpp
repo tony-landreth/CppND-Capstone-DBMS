@@ -11,7 +11,8 @@
 
 class FileScanTest : public ::testing::Test {
   protected:
-    FileScan fs{"test_data"};
+    TableSchema tblSchema = schema_loader("test_data");
+    FileScan fs{ tblSchema };
 };
 
 TEST_F(FileScanTest, TestNext) {
@@ -30,7 +31,8 @@ TEST_F(FileScanTest, TestNext) {
 
 class SelectionTest : public ::testing::Test {
   protected:
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+    TableSchema schema = schema_loader("test_data");
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
 };
 
@@ -49,7 +51,8 @@ TEST_F(SelectionTest, TestNext) {
 
 class StarTest : public ::testing::Test {
   protected:
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+    TableSchema schema = schema_loader("test_data");
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{};
 };
 
@@ -66,11 +69,11 @@ TEST_F(StarTest, TestSelectStarNext) {
   };
 
   std::vector<std::vector<std::string> > results;
-  std::vector<std::string> row = select.next();
+  std::vector<std::string> row;
 
-  while(row.size() > 0) {
-    results.push_back(row);
+  for(int i = 0; i < schema.tableSize; i++) {
     row = select.next();
+    results.push_back(row);
   }
 
   EXPECT_EQ(results, expectedResult);
@@ -79,17 +82,16 @@ TEST_F(StarTest, TestSelectStarNext) {
 // Tests for Projection
 class ProjectionTest : public ::testing::Test {
   protected:
-    TableSchema tblSchema = schema_loader("test_data");
-    std::map<std::string,int> schema = tblSchema.columnKeys;
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+    TableSchema schema = schema_loader("test_data");
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> col_names{ "title", "genres" };
     std::vector<std::string> where;
 };
 
 TEST_F(ProjectionTest, TestNext) {
   fs->scanFile();
-  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), tblSchema );
-  Projection projection{col_names, std::move( select ), tblSchema };
+  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), schema );
+  Projection projection{col_names, std::move( select ), schema };
 
   // Advance to a row where title = "The Fall"
   projection.next();
@@ -101,9 +103,8 @@ TEST_F(ProjectionTest, TestNext) {
 
 TEST_F(ProjectionTest, Rewind) {
   fs->scanFile();
-  TableSchema sch = fs->schema;
-  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), tblSchema );
-  Projection projection{col_names, std::move( select ), tblSchema};
+  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), schema );
+  Projection projection{col_names, std::move( select ), schema};
 
   // Advance to a row where title = "The Fall"
   projection.next();
@@ -125,6 +126,10 @@ TEST_F(ProjectionTest, Rewind) {
 // Tests for Join
 class JoinTest : public ::testing::Test {
   protected:
+    TableSchema schema = schema_loader("test_data");
+    std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>(schema);
+    std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>(schema);
+
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
     std::vector<std::string> col_names{  "movieId", "title", };
     std::vector<std::string> keys{ "movieId", "movieId" };
@@ -132,18 +137,14 @@ class JoinTest : public ::testing::Test {
 };
 
 TEST_F(JoinTest, TestNext) {
-  std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data");
   mfs->scanFile();
-  TableSchema mfsSchema = mfs->schema;
-  std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data");
-  TableSchema rfsSchema = rfs->schema;
   rfs->scanFile();
-  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ), tblSchema);
-  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ), tblSchema);
-  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ), tblSchema);
-  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ), tblSchema);
+  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ), schema);
+  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ), schema);
+  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ), schema);
+  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ), schema);
 
-  Join join( std::move( mprojection ), std::move( rprojection ), keys, tblSchema, tblSchema);
+  Join join( std::move( mprojection ), std::move( rprojection ), keys, tblSchema, schema);
   std::vector<std::vector<std::string> > result;
 
   int tableSize = 5;
@@ -220,7 +221,6 @@ TEST_F(TokenizerWithWhereJoinTest, Tokenize) {
 }
 
 // Tests for QueryPlanner
-
 class QueryPlannerTest : public ::testing::Test {
   protected:
     std::vector<std::string> arguments = {"./mildDBMS", "SELECT * FROM test_data;"};

@@ -8,7 +8,6 @@ std::vector<std::string> Projection::next(){
   std::vector<std::string> result;
   std::vector<std::string> row = sel_->next();
 
-  tableSize = sel_->tableSize;
   tableName = schema.tableName;
 
   std::map<std::string,int> colMap;
@@ -68,7 +67,7 @@ std::vector<std::string> Projection::next(){
 }
 
 void Projection::rewind(){
-  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema.tableName);
+  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
   fs->scanFile();
 
   if(sel_->keys.size() > 0) {
