@@ -16,8 +16,6 @@ class Selection : public PlanNode
     TableSchema schema;
     std::vector<std::string> where;
     std::unique_ptr<FileScan> fs;
-    std::string tableName;
-    int tableSize;
     std::vector<std::string> keys;
 
   private:

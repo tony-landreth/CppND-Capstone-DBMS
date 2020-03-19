@@ -11,10 +11,8 @@ TokenTree QueryPlanner::tokenize()
   return tt;
 };
 
-// As you traverse the tree, build a pipeline of PlanNodes
-// returning a single node on which you can call next()
-// TODO: Rename to collectQueryData
-std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenTree root) {
+// Convert token tree to map to simplify logic when building query
+std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTree root) {
   int treeSize = root.leaves.size();
 
   TokenTree firstNode = root.leaves[0];
@@ -79,6 +77,8 @@ void QueryPlanner::detectClauses(){
     jnPresent_ = true; // found
 }
 
+// As you traverse the tree, build a pipeline of PlanNodes
+// returning a single node on which you can call next()
 std::vector<std::vector<std::string> > QueryPlanner::run()
 {
   std::vector<std::string> badQueryMsg{ "You have not submitted a valid query.", "The minimal query has the form SELECT * FROM table_name;" };
@@ -88,7 +88,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::vector<std::string> where;
   int frmTableSize;
 
-  std::map<std::string, std::vector<std::string> > queryData_ = buildQuery(tt);
+  std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tt);
   detectClauses(); // Set flags for clauses detected in queryData_
 
   // Handle commands missing the minimal data to issue a query

@@ -26,7 +26,7 @@ class QueryPlanner{
     // Method declarations
     TokenTree tokenize();
     FileScan scanFile(std::string tableName);
-    std::map<std::string, std::vector<std::string> > buildQuery(TokenTree tt);
+    std::map<std::string, std::vector<std::string> > mapQuery(TokenTree tt);
 
     // Variable declarations
     char** argv_;

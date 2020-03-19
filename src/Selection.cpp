@@ -5,12 +5,7 @@ Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> f
 
 std::vector<std::string> Selection::next()
 {
-  tableName = schema.tableName;
   keys = where;
-
-  //TODO: add tableSize to schema
-  tableSize = fs->tableSize;
-
   std::vector<std::string> empty_row;
   std::vector<std::string> row;
   row = fs->next();
@@ -29,9 +24,8 @@ std::vector<std::string> Selection::next()
     std::string val = where[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
     if(op == "EQUALS") {
-      TableSchema tblSchema = schema_loader(tableName);
-      std::map<std::string, int> schema = tblSchema.columnKeys;
-      int colNum = schema[key];
+      std::map<std::string, int> colKeys = schema.columnKeys;
+      int colNum = colKeys[key];
 
       // Return when the row contains only the empty string
       if(( row.size() <= 1 ) && (row[0].empty()))
