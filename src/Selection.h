@@ -18,7 +18,7 @@ class Selection : public PlanNode
     std::vector<std::string> keys;
 
   private:
-    int rowIdx = 0;
+    int rowIdx_ = 0;
 };
 
 #endif

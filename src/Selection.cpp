@@ -18,8 +18,8 @@ std::vector<std::string> Selection::next()
   if(row.size() == 0)
     return empty_row;
 
-  if(rowIdx == 0) {
-    rowIdx++;
+  if(rowIdx_ == 0) {
+    rowIdx_++;
     return row;
   }
 
