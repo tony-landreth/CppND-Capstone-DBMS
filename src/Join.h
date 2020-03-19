@@ -10,7 +10,7 @@
 class Join : public PlanNode
 {
   public:
-    Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> k, TableSchema rsch, TableSchema ssch); 
+    Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> k, const TableSchema rsch, const TableSchema ssch);
     std::vector<std::string> next();
     void rewind(){};
     int rTableSize;

@@ -7,7 +7,7 @@
 class Projection : public PlanNode
 {
   public:
-    Projection(const std::vector<std::string> column_names, const std::unique_ptr<PlanNode> sel, TableSchema sch);
+    Projection(const std::vector<std::string> column_names, const std::unique_ptr<PlanNode> sel, const TableSchema sch);
     std::vector<std::string> next();
     void rewind();
     std::string tableName;

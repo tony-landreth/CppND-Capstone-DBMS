@@ -15,7 +15,7 @@ class TokenTree
 class Tokenizer
 {
   public:
-    TokenTree tokenize(std::string str);
+    TokenTree tokenize(const std::string str);
   private:
     std::vector<std::string> tkns;          // a vector to hold query tokens
     std::string tkn;                        // a placeholder for the most recently processed token

@@ -11,7 +11,7 @@
 class FileScan : public PlanNode
 {
   public:
-    FileScan(std::string tableName);
+    FileScan(const std::string tableName);
     std::vector<std::string> next();
     void rewind(){};
     std::string tableName;
