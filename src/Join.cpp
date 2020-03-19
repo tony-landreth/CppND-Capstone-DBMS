@@ -3,7 +3,9 @@
 #include "schema_loader.h"
 
 
-Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, TableSchema rsch, TableSchema ssch) : r_(std::move( r )), s_(std::move( s )), keys_(k), r_schema_(rsch), s_schema_(ssch) {}
+Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, TableSchema rsch, TableSchema ssch) : r_(std::move( r )), s_(std::move( s )), keys_(k), r_schema_(rsch), s_schema_(ssch) {
+  schema.tableName = "virtual";
+}
 
 std::vector<std::string> Join::next() {
   rTableSize = r_schema_.tableSize;
@@ -62,7 +64,7 @@ std::vector<std::string> Join::next() {
         s_col = s_row[s_colID];
 
         if(r_col == s_col) {
-          joinSize++;
+          schema.tableSize++;
           std::vector<std::string> result_row;
           std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
           std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));

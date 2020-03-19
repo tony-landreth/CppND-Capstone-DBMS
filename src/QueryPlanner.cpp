@@ -173,7 +173,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::vector<std::string> fixtureKeys{ "title" };
     TableSchema jnSchema;
     jnSchema.tableName = "virtual";
-    jnSchema.tableSize = jn->joinSize;
+    jnSchema.tableSize = jn->schema.tableSize;
 
     std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(frontEndSelCols, std::move( jn ), jnSchema);
 

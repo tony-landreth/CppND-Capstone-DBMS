@@ -18,9 +18,8 @@ class Join : public PlanNode
     // Joining table columns affects the number of columns in the in-memory table representation
     // which undermines the schema used as table read time. jSchema is used to produce a sort of virtual
     // schema to represent the ordering of the joined data in memory.
-    std::map<std::string,int> schema;
+    TableSchema schema;
     std::vector<int> foreignKeys;
-    int joinSize = 0;
 
   private:
     std::unique_ptr<Projection> r_;
