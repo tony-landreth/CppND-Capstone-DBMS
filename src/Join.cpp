@@ -25,7 +25,7 @@ std::vector<std::string> Join::next() {
   std::string s_col;
 
   // If this is the first call to next(), return title row
-  // and construct a schema based on the incoming nodes jSchema
+  // and construct a schema based on the incoming nodes
   if(rowIdx == 0) {
     rowIdx++; // Log that you've encountered the header rows for R and S
 
