@@ -1,6 +1,8 @@
 #include "Projection.h"
 #include "schema_loader.h"
 
+Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, TableSchema sch) : column_names_(column_names), sel_(std::move( sel )), schema(sch) {};
+
 std::vector<std::string> Projection::next(){
 
   std::vector<std::string> result;
@@ -19,15 +21,20 @@ std::vector<std::string> Projection::next(){
 
       // To handle columns with the same name
       // Track whether an index has been taken
-      std::vector<int> selColMap(row.size(), 0);
+      std::vector<int> selColMap(row.size(), -1);
 
-      // For each selected column
+      // Match each column name to its position in the header row
       for(int i = 0; i < column_names_.size(); i++){
         for(int j = 0; j < row.size(); j++){
-          if(( selColMap[j] == 0 ) && ( column_names_[i] == row[j] )){
-            colKeys.push_back(i);
-            selColMap[j] = 1;
+          if(( selColMap[j] == -1 ) && ( column_names_[i] == row[j] )){
+            selColMap[j] = j;
           }
+        }
+      }
+      // Only keep an index in selColMap if it belongs to a selected column
+      for(int i : selColMap) {
+        if(i != -1){
+          colKeys.push_back(i);
         }
       }
     }
@@ -62,7 +69,6 @@ std::vector<std::string> Projection::next(){
     int rowID = colKeys[i];
     result.push_back(row[rowID]);
   }
-  std::cout << std::endl;
 
   // Now that you've projected into a lower-dimensional space, the file schema is no longer useful
   return result;

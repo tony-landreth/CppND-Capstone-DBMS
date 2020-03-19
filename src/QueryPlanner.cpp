@@ -22,7 +22,6 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenT
   TokenTree firstNode = root.leaves[0];
 
   int firstNodeSize = firstNode.leaves.size();
-  //TODO: allow for handling multiple columns
   std::vector<std::string> selCols{ firstNode.leaves[0].token };
   queryData_.insert({"SELECT", selCols});
 
@@ -110,9 +109,10 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // Build SELECTION Node
   TableSchema frmFsSchema = frmFs->schema;
   where = queryData_["WHERE"];
-  std::vector<std::string> selCols = queryData_["SELECT"];
+  std::vector<std::string> frontEndSelCols = queryData_["SELECT"];
+  std::vector<std::string> backEndSelCols = frontEndSelCols;
 
-  if(selCols[0] == "*"){
+  if(frontEndSelCols[0] == "*"){
     std::vector<std::string> allCols;
     std::vector<int> allIdxs;
     std::map<int, std::string> revMap;
@@ -128,7 +128,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
       allCols.push_back(revMap[i]);
     }
 
-    selCols = allCols;
+    frontEndSelCols = allCols;
   }
 
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), frmFsSchema);
@@ -141,18 +141,19 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::vector<std::string> jnParams = queryData_["JOIN"];
     std::string sTblName = jnParams[0];
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
+
     // TODO: create a separate selCols, i.e. rSelCols and sSeCols
     // So you can handle foreign keys with different names
 
     for(std::string k : jnKeys){
-      if(std::find(selCols.begin(), selCols.end(), k) == selCols.end()){
-        selCols.push_back(jnKeys[0]);
+      if(std::find(backEndSelCols.begin(), backEndSelCols.end(), k) == backEndSelCols.end()){
+        backEndSelCols.push_back(k);
       }
     } 
 
-    prjR = std::make_unique<Projection>(selCols, std::move( sel ), frmFsSchema);
+    prjR = std::make_unique<Projection>(backEndSelCols, std::move( sel ), frmFsSchema);
   } else {
-    prjR = std::make_unique<Projection>(selCols, std::move( sel ), frmFsSchema);
+    prjR = std::make_unique<Projection>(frontEndSelCols, std::move( sel ), frmFsSchema);
   }
 
   // Build Join Node
@@ -168,20 +169,24 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs), frmFsSchema);
 
     // Build sProjection
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(selCols, std::move( sSel ), frmFsSchema);
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(backEndSelCols, std::move( sSel ), frmFsSchema);
     std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, frmFsSchema, frmFsSchema);
 
     std::vector<std::string> fixtureKeys{ "title" };
     TableSchema jnSchema;
     jnSchema.tableName = "virtual";
+
+    //TODO: WHERE clauses reduce the S side tableSize
     jnSchema.tableSize = 6;
 
-    // You need this version of sansForeignKeys for SELECT * queries, and fixtureKeys and jnSchema otherwise
-    //std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(fixtureKeys, std::move( jn ), jnSchema);
+    for(std::string st : frontEndSelCols) {
+      std::cout << "frontEndSelCols " << st << std::endl;
+    }
+
+    std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(frontEndSelCols, std::move( jn ), jnSchema);
 
     for(int i = 0; i < frmTableSize; i++){
-      //row = sansForeignKeys->next();
-      row = jn->next();
+      row = sansForeignKeys->next();
 
       if(row.size() > 0) {
         results.push_back(row);

@@ -4,6 +4,7 @@
 
 
 Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, TableSchema rsch, TableSchema ssch) : r_(std::move( r )), s_(std::move( s )), keys_(k), r_schema_(rsch), s_schema_(ssch) {}
+
 std::vector<std::string> Join::next() {
   rTableSize = r_schema_.tableSize;
   sTableSize = s_schema_.tableSize;
@@ -12,16 +13,12 @@ std::vector<std::string> Join::next() {
   std::string r_key = keys_[0];
   std::string s_key = keys_[1];
 
-  TableSchema rSchema = r_->schema;
-  TableSchema sSchema = s_->schema;
-
   // Get the next row from each node
   std::vector<std::string> r_row = r_->next();
 
   // Rewind the S relation so that a full table scan is possible
   std::vector<std::string> s_row = s_->next();
   s_->rewind();
-
 
   // Use these variables to determine when the foreign keys match between two tables
   std::string r_col;
@@ -59,8 +56,8 @@ std::vector<std::string> Join::next() {
     r_col = r_row[r_colID];
   }
 
-  std::cout << "S ROW SIZE " << s_row.size() << " R ROW SIZE " << r_row.size() << std::endl;
-  std::cout << "S COLID " << s_colID << " R COLID " << r_colID << std::endl;
+//  std::cout << "S ROW SIZE " << s_row.size() << " R ROW SIZE " << r_row.size() << std::endl;
+//  std::cout << "S COLID " << s_colID << " R COLID " << r_colID << std::endl;
 
   if(r_col.size() > 0) {
     for(int i = 0; i < sTableSize; i++) {
