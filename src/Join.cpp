@@ -56,15 +56,13 @@ std::vector<std::string> Join::next() {
     r_col = r_row[r_colID];
   }
 
-//  std::cout << "S ROW SIZE " << s_row.size() << " R ROW SIZE " << r_row.size() << std::endl;
-//  std::cout << "S COLID " << s_colID << " R COLID " << r_colID << std::endl;
-
   if(r_col.size() > 0) {
     for(int i = 0; i < sTableSize; i++) {
       if(s_row.size() > 0){
         s_col = s_row[s_colID];
 
         if(r_col == s_col) {
+          joinSize++;
           std::vector<std::string> result_row;
           std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
           std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));

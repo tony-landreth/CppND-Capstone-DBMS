@@ -15,8 +15,6 @@ TokenTree QueryPlanner::tokenize()
 // returning a single node on which you can call next()
 // TODO: Rename to collectQueryData
 std::map<std::string, std::vector<std::string> > QueryPlanner::buildQuery(TokenTree root) {
-  // TODO: create an experiment file to try to figure out polymorphism with smart pointers
-  // in /experiments
   int treeSize = root.leaves.size();
 
   TokenTree firstNode = root.leaves[0];
@@ -105,9 +103,9 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(tblName);
   frmFs->scanFile();
   frmTableSize = frmFs->tableSize;
+  TableSchema frmFsSchema = frmFs->schema;
 
   // Build SELECTION Node
-  TableSchema frmFsSchema = frmFs->schema;
   where = queryData_["WHERE"];
 
   // Determine which columns will be displayed to the user
@@ -145,7 +143,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
     // TODO: create a separate selCols, i.e. rSelCols and sSeCols
     // So you can handle foreign keys with different names
-
     for(std::string k : jnKeys){
       if(std::find(backEndSelCols.begin(), backEndSelCols.end(), k) == backEndSelCols.end()){
         backEndSelCols.push_back(k);
@@ -176,9 +173,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::vector<std::string> fixtureKeys{ "title" };
     TableSchema jnSchema;
     jnSchema.tableName = "virtual";
-
-    //TODO: WHERE clauses reduce the S side tableSize
-    jnSchema.tableSize = 6;
+    jnSchema.tableSize = jn->joinSize;
 
     std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(frontEndSelCols, std::move( jn ), jnSchema);
 

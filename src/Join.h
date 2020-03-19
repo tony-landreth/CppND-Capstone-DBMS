@@ -20,6 +20,7 @@ class Join : public PlanNode
     // schema to represent the ordering of the joined data in memory.
     std::map<std::string,int> jSchema;
     std::vector<int> foreignKeys;
+    int joinSize = 0;
 
   private:
     std::unique_ptr<Projection> r_;

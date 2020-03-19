@@ -58,13 +58,6 @@ std::vector<std::string> Projection::next(){
   if(row[0].size() == 0)
     return result;
 
-  // When no column names are specified, return the whole row
-  if(column_names_.size() == 0)
-    return row;
-
-  if(column_names_[0] == "*")
-    return row;
-
   for(int i = 0; i < colKeys.size(); i++) {
     int rowID = colKeys[i];
     result.push_back(row[rowID]);

@@ -34,6 +34,7 @@ TableSchema schema_loader(std::string tableName){
   };
 
   schema.tableName = tableName;
+  schema.tableSize = tableSize;
   schema.columnKeys = colKeys;
 
   return schema;
