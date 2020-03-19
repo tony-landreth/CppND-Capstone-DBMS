@@ -13,7 +13,6 @@
 #include "Projection.h"
 #include "Join.h"
 #include "Tokenizer.h"
-#include "EmptyPlan.h"
 
 class QueryPlanner{
   public:
