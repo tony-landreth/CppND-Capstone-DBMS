@@ -4,6 +4,11 @@
 #include<vector>
 #include<sstream> 
 
+/*
+   TokenTree stores user input into meaningful units for building
+   a query.
+*/
+
 class TokenTree
 {
   public:
@@ -11,6 +16,10 @@ class TokenTree
     std::string token;
     std::vector<std::string> depthFirstSearch(std::vector<std::string> *v);
 };
+
+/*
+   Tokenizer parses user input into meaningful tokens.
+*/
 
 class Tokenizer
 {
