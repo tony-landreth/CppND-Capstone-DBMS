@@ -9,10 +9,9 @@ class PlanNode
     // Method declarations
     virtual std::vector<std::string> next() = 0;
     virtual ~PlanNode(){};
-    virtual void rewind() = 0;
+    virtual void rewind() = 0; // makes repeated full table scans possible
 
     // Variable declarations
-    TableSchema schema;
     std::vector<std::string> keys;
 
   private:
