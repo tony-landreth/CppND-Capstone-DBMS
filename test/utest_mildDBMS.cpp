@@ -109,7 +109,7 @@ TEST_F(ProjectionTest, TestNext) {
   EXPECT_EQ(row, expectation);
 }
 
-// Remind makes it possible to run JOINs using a naive, inefficient strategy, which
+// Rewind makes it possible to run JOINs using a naive, inefficient strategy, which
 // I will hopefully swap out at some point.
 TEST_F(ProjectionTest, Rewind) {
   fs->scanFile();

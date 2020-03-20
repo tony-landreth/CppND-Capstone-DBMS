@@ -4,6 +4,12 @@
 #include<string>
 #include<map>
 
+
+/*  Projection nodes filter all columns but those specified in a SELECT statement, e.g.
+    `SELECT title FROM test_data;` entails that only the title column from each row be returned.
+    Projection nodes include a rewind() method for use by Join nodes.
+*/
+
 class Projection : public PlanNode
 {
   public:
