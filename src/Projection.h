@@ -11,7 +11,6 @@ class Projection : public PlanNode
     std::vector<std::string> next();
     void rewind();
     std::string tableName;
-    int tableSize;
     TableSchema schema;
 
   private:

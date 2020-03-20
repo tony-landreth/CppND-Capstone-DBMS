@@ -6,7 +6,6 @@ FileScan::FileScan(TableSchema sch) : schema(sch){};
 //TODO: scanFile should run on init
 void FileScan::scanFile() {
   std::stringstream fileName;
-  tableSize = schema.tableSize;
   fileName << "../test/" << schema.tableName << ".csv";
 
   fileStream_.open(fileName.str());

@@ -13,7 +13,6 @@ class PlanNode
 
     // Variable declarations
     TableSchema schema;
-    int tableSize; //TODO: move tableSize into TableSchema
     std::vector<std::string> keys;
 };
 

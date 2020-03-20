@@ -20,7 +20,6 @@ class FileScan : public PlanNode
 
     // Variable declarations
     std::string tableName;
-    int tableSize;
     TableSchema schema;
 
   private:
