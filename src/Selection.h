@@ -14,13 +14,13 @@ class Selection : public PlanNode
 
     // Variable declarations
     TableSchema schema;
-    std::unique_ptr<FileScan> fs;
     std::vector<std::string> keys;
 
   private:
     // Method declarations
 
     // Variable declarations
+    std::unique_ptr<FileScan> fs_;
     int rowIdx_ = 0;
 };
 

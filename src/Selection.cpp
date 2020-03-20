@@ -1,13 +1,13 @@
 #include "Selection.h"
 #include "schema_loader.h"
 
-Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs, TableSchema sch) : keys(where), fs(std::move(fs)), schema(sch) {};
+Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs, TableSchema sch) : keys(where), fs_(std::move(fs)), schema(sch) {};
 
 std::vector<std::string> Selection::next()
 {
   std::vector<std::string> empty_row;
   std::vector<std::string> row;
-  row = fs->next();
+  row = fs_->next();
 
   if(row.size() == 0)
     return empty_row;
