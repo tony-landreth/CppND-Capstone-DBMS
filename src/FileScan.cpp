@@ -1,6 +1,6 @@
 #include "FileScan.h"
 
-FileScan::FileScan(TableSchema sch) : schema_(sch){};
+FileScan::FileScan(Schema sch) : schema_(sch){};
 
 
 //TODO: scanFile should run on init

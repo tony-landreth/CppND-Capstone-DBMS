@@ -99,7 +99,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   // Build rFileScan Node
   std::string tblName = queryData_["FROM"][0];
-  TableSchema schema = schema_loader(tblName);
+  Schema schema = schema_loader(tblName);
   int frmTableSize = schema.tableSize;
   std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(schema);
   frmFs->scanFile();
@@ -133,7 +133,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   // Build Projection Node
   std::unique_ptr<Projection> prjR;
-  TableSchema sTblSchema;
+  Schema sTblSchema;
 
   if(jnPresent_ ){
     // Add JOIN keys to projection node
@@ -173,7 +173,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, schema);
 
     // Get the Join node's representation of the data it will return
-    TableSchema jnSchema = jn->getSchema();
+    Schema jnSchema = jn->getSchema();
     jnSchema.tableName = "virtual";
 
     std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(frontEndSelCols, std::move( jn ), jnSchema);

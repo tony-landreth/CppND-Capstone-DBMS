@@ -18,7 +18,7 @@
 class FileScan : public PlanNode
 {
   public:
-    FileScan(const TableSchema schema);
+    FileScan(const Schema schema);
 
     // Method declarations
     std::vector<std::string> next();
@@ -26,14 +26,14 @@ class FileScan : public PlanNode
     void scanFile();
 
     // Variable declarations
-    TableSchema schema;
+    Schema schema;
 
   private:
     // Method declarations
     std::vector<std::string> next_();
 
     // Variable declarations
-    TableSchema schema_;
+    Schema schema_;
     int idx_for_next_;
     std::vector<std::vector<std::string> > relation_;
     std::ifstream fileStream_;

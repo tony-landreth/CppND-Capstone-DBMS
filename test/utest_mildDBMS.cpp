@@ -15,7 +15,7 @@
 //
 class FileScanTest : public ::testing::Test {
   protected:
-    TableSchema tblSchema = schema_loader("test_data");
+    Schema tblSchema = schema_loader("test_data");
     FileScan fs{ tblSchema };
 };
 
@@ -35,7 +35,7 @@ TEST_F(FileScanTest, TestNext) {
 // Select nodes use WHERE clauses to filter table data by rows
 class SelectionTest : public ::testing::Test {
   protected:
-    TableSchema schema = schema_loader("test_data");
+    Schema schema = schema_loader("test_data");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
 };
@@ -57,7 +57,7 @@ TEST_F(SelectionTest, TestNext) {
 // Until my QueryPlanner is more ideal, any empty WHERE clause admits all rows.
 class StarTest : public ::testing::Test {
   protected:
-    TableSchema schema = schema_loader("test_data");
+    Schema schema = schema_loader("test_data");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{};
 };
@@ -90,7 +90,7 @@ TEST_F(StarTest, TestSelectStarNext) {
 // SELECT title FROM test_data entails that only the title column from each row be returned.
 class ProjectionTest : public ::testing::Test {
   protected:
-    TableSchema schema = schema_loader("test_data");
+    Schema schema = schema_loader("test_data");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> col_names{ "title", "genres" };
     std::vector<std::string> where;
@@ -140,14 +140,14 @@ TEST_F(ProjectionTest, Rewind) {
 // R and S tables.
 class JoinTest : public ::testing::Test {
   protected:
-    TableSchema schema = schema_loader("test_data");
+    Schema schema = schema_loader("test_data");
     std::unique_ptr<FileScan> tableR = std::make_unique<FileScan>(schema);
     std::unique_ptr<FileScan> tableS = std::make_unique<FileScan>(schema);
 
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
     std::vector<std::string> col_names{  "movieId", "title", };
     std::vector<std::string> keys{ "movieId", "movieId" };
-    TableSchema tblSchema = schema_loader("test_data");
+    Schema tblSchema = schema_loader("test_data");
 };
 
 TEST_F(JoinTest, TestNext) {

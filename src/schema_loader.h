@@ -3,16 +3,16 @@
 #include<string>
 #include<map>
 
-// TableSchema maintains a representation of the shape of
+// Schema maintains a representation of the shape of
 // data as it passes from files reads through a pipeline of
 // PlanNodes.
-struct TableSchema
+struct Schema
 {
   std::string tableName;
   int tableSize = 0;
   std::map<std::string, int> columnKeys;
 };
 
-TableSchema schema_loader(std::string tableName);
+Schema schema_loader(std::string tableName);
 
 #endif

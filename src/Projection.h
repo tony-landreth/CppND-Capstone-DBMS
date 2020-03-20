@@ -14,7 +14,7 @@ class Projection : public PlanNode
 {
   public:
     // Method declarations
-    Projection(const std::vector<std::string> keys, const std::unique_ptr<PlanNode> sel, const TableSchema sch);
+    Projection(const std::vector<std::string> keys, const std::unique_ptr<PlanNode> sel, const Schema sch);
     std::vector<std::string> next();
     void rewind();
 
@@ -25,7 +25,7 @@ class Projection : public PlanNode
     // Method declarations
 
     // Variable declarations
-    TableSchema schema_;
+    Schema schema_;
     std::unique_ptr<PlanNode> sel_;
     int rowIdx_ = 0;
     std::vector<int> colKeys;

@@ -14,7 +14,7 @@ class Selection : public PlanNode
 {
   public:
     // Method declarations
-    Selection(const std::vector<std::string> keys, const std::unique_ptr<FileScan> fs, const TableSchema sch);
+    Selection(const std::vector<std::string> keys, const std::unique_ptr<FileScan> fs, const Schema sch);
     std::vector<std::string> next();
     void rewind(){}; // presently used only on Projection nodes
 
@@ -25,7 +25,7 @@ class Selection : public PlanNode
     // Method declarations
 
     // Variable declarations
-    TableSchema schema_;
+    Schema schema_;
     std::unique_ptr<FileScan> fs_;
     int rowIdx_ = 0;
 };

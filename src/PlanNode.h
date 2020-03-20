@@ -15,7 +15,7 @@ class PlanNode
     std::vector<std::string> keys;
 
   private:
-    TableSchema schema_;
+    Schema schema_;
 };
 
 #endif

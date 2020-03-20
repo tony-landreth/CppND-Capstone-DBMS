@@ -4,8 +4,8 @@
 // Notably, the code below does not mark foreign keys and primary
 // keys as such.
 
-TableSchema schema_loader(std::string tableName){
-  TableSchema schema;
+Schema schema_loader(std::string tableName){
+  Schema schema;
   std::map<std::string, int> colKeys;
   int tableSize;
 
