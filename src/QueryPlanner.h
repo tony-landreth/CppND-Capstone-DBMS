@@ -14,6 +14,10 @@
 #include "Join.h"
 #include "Tokenizer.h"
 
+/*
+   QueryPlanner determines which PlanNodes need to be instantiated
+   to execute a query request, issued by a user.
+*/
 class QueryPlanner{
   public:
     // Method declarations
@@ -24,9 +28,8 @@ class QueryPlanner{
 
   private:
     // Method declarations
-    TokenTree tokenize();
-    FileScan scanFile(std::string tableName);
-    std::map<std::string, std::vector<std::string> > mapQuery(TokenTree tt);
+    TokenTree tokenize(); // tokenizes user input
+    std::map<std::string, std::vector<std::string> > mapQuery(TokenTree tt); // generates an intermediate representation
 
     // Variable declarations
     char** argv_;
