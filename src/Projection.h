@@ -13,7 +13,6 @@ class Projection : public PlanNode
     void rewind();
 
     // Variable declarations
-    std::string tableName;
     TableSchema schema;
     std::vector<std::string> keys;
 

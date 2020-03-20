@@ -8,13 +8,11 @@ std::vector<std::string> Projection::next(){
   std::vector<std::string> result;
   std::vector<std::string> row = sel_->next();
 
-  tableName = schema.tableName;
-
   std::map<std::string,int> colMap;
   std::vector<std::string> colHeaders;
 
 
-  if(tableName == "virtual"){
+  if(schema.tableName == "virtual"){
     if(rowIdx_ == 0){
       rowIdx_++;
 
