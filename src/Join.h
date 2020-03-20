@@ -11,7 +11,7 @@ class Join : public PlanNode
 {
   public:
     // Method declarations
-    Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> k, const TableSchema rsch, const TableSchema ssch);
+    Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> foreignKeyNames, const TableSchema rsch, const TableSchema ssch);
     std::vector<std::string> next();
     void rewind(){};
 
@@ -20,6 +20,7 @@ class Join : public PlanNode
     int sTableSize;
     TableSchema schema;
     std::vector<int> foreignKeys;
+    std::vector<std::string> keys;
 
   private:
     // Method declarations
@@ -27,7 +28,6 @@ class Join : public PlanNode
     // Variable declarations
     std::unique_ptr<Projection> r_;
     std::unique_ptr<Projection> s_;
-    std::vector<std::string> keys_;
     int rowIdx = 0;
     TableSchema r_schema_;
     TableSchema s_schema_;

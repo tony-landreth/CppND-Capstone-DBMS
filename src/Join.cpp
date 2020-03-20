@@ -3,7 +3,7 @@
 #include "schema_loader.h"
 
 
-Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, TableSchema rsch, TableSchema ssch) : r_(std::move( r )), s_(std::move( s )), keys_(k), r_schema_(rsch), s_schema_(ssch) {
+Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, TableSchema rsch, TableSchema ssch) : r_(std::move( r )), s_(std::move( s )), keys(k), r_schema_(rsch), s_schema_(ssch) {
   schema.tableName = "virtual";
 }
 
@@ -13,8 +13,8 @@ std::vector<std::string> Join::next() {
   sTableSize = s_schema_.tableSize + 1;
 
   std::vector<std::string> result;
-  std::string r_key = keys_[0];
-  std::string s_key = keys_[1];
+  std::string r_key = keys[0];
+  std::string s_key = keys[1];
 
   // Get the next row from each node
   std::vector<std::string> r_row = r_->next();
@@ -40,9 +40,9 @@ std::vector<std::string> Join::next() {
     // Build the column index for foreign keys
     // Allowing foreign keys to have the same name
     std::vector<int> keyMap(result_row.size(), 0);
-    for(int i = 0; i < keys_.size(); i++){
+    for(int i = 0; i < keys.size(); i++){
       for(int j = 0; j < result_row.size(); j++){
-        if(( keyMap[j] == 0 ) && ( keys_[i] == result_row[j] )){
+        if(( keyMap[j] == 0 ) && ( keys[i] == result_row[j] )){
           foreignKeys.push_back(i);
           keyMap[j] = 1;
         }
