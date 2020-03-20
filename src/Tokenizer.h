@@ -7,7 +7,7 @@
 class TokenTree
 {
   public:
-    std::vector<TokenTree> leaves;
+    std::vector<TokenTree> children;
     std::string token;
     std::vector<std::string> depthFirstSearch(std::vector<std::string> *v);
 };

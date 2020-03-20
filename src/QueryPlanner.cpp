@@ -13,48 +13,48 @@ TokenTree QueryPlanner::tokenize()
 
 // Convert token tree to map to simplify logic when building query
 std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTree root) {
-  int treeSize = root.leaves.size();
+  int treeSize = root.children.size();
 
-  TokenTree firstNode = root.leaves[0];
+  TokenTree firstNode = root.children[0];
 
-  int firstNodeSize = firstNode.leaves.size();
-  std::vector<std::string> selCols{ firstNode.leaves[0].token };
+  int firstNodeSize = firstNode.children.size();
+  std::vector<std::string> selCols{ firstNode.children[0].token };
   queryData_.insert({"SELECT", selCols});
 
   int fromNodeIdx = 1;
-  TokenTree fromNode = firstNode.leaves[fromNodeIdx];
+  TokenTree fromNode = firstNode.children[fromNodeIdx];
 
   if(fromNode.token == "FROM") {
-    std::string tblName = fromNode.leaves[0].token;
+    std::string tblName = fromNode.children[0].token;
     queryData_.insert({"FROM", { tblName }});
   }
 
-  if(root.leaves.size() > 1){
-    TokenTree secondNode = root.leaves[1];
+  if(root.children.size() > 1){
+    TokenTree secondNode = root.children[1];
     if(secondNode.token == "WHERE") {
-      std::string v1 = secondNode.leaves[0].token;
-      std::string eq = secondNode.leaves[1].token;
-      std::string v2 = secondNode.leaves[2].token;
+      std::string v1 = secondNode.children[0].token;
+      std::string eq = secondNode.children[1].token;
+      std::string v2 = secondNode.children[2].token;
       std::vector<std::string> whrClause{ v1, eq, v2 };
       queryData_.insert({"WHERE", whrClause});
     }
     if(secondNode.token == "JOIN") {
-      std::string tbl = secondNode.leaves[0].token;
-      std::string on = secondNode.leaves[1].token;
-      std::string rKey = secondNode.leaves[1].leaves[0].token;
-      std::string eq = secondNode.leaves[3].token;
-      std::string sKey = secondNode.leaves[1].leaves[2].token;
+      std::string tbl = secondNode.children[0].token;
+      std::string on = secondNode.children[1].token;
+      std::string rKey = secondNode.children[1].children[0].token;
+      std::string eq = secondNode.children[3].token;
+      std::string sKey = secondNode.children[1].children[2].token;
       std::vector<std::string> jnClause{ tbl, rKey, sKey };
       queryData_.insert({"JOIN", jnClause});
     }
   }
 
-  if(root.leaves.size() > 2){
-    TokenTree thirdNode = root.leaves[2];
+  if(root.children.size() > 2){
+    TokenTree thirdNode = root.children[2];
     if(thirdNode.token == "WHERE") {
-      std::string v1 = thirdNode.leaves[0].token;
-      std::string eq = thirdNode.leaves[1].token;
-      std::string v2 = thirdNode.leaves[2].token;
+      std::string v1 = thirdNode.children[0].token;
+      std::string eq = thirdNode.children[1].token;
+      std::string v2 = thirdNode.children[2].token;
       std::vector<std::string> whrClause{ v1, eq, v2 };
       queryData_.insert({"WHERE", whrClause});
     }
