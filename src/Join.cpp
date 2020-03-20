@@ -7,6 +7,10 @@ Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::ve
   schema.tableName = "virtual";
 }
 
+TableSchema Join::getSchema(){
+  return schema;
+}
+
 std::vector<std::string> Join::next() {
   rTableSize = r_schema_.tableSize;
   // TODO: Figure out why this + 1 is relevant and refactor

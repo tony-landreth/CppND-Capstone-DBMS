@@ -11,9 +11,15 @@ class Join : public PlanNode
 {
   public:
     // Method declarations
+    /* Following existing conventions, when two tables are joined,
+       we refer to the joined tables as R and S respectively
+    */
     Join(const std::unique_ptr<Projection> r, const std::unique_ptr<Projection> s, const std::vector<std::string> foreignKeyNames, const TableSchema rsch, const TableSchema ssch);
     std::vector<std::string> next();
     void rewind(){};
+
+    // Getters
+    TableSchema getSchema();
 
     // Variable declarations
     int rTableSize;

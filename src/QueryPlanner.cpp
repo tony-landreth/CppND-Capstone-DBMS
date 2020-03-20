@@ -172,10 +172,9 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::unique_ptr<Projection> prjS = std::make_unique<Projection>(backEndSelCols, std::move( sSel ), schema);
     std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, schema);
 
-    std::vector<std::string> fixtureKeys{ "title" };
-    TableSchema jnSchema;
+    // Get the Join node's representation of the data it will return
+    TableSchema jnSchema = jn->getSchema();
     jnSchema.tableName = "virtual";
-    jnSchema.tableSize = jn->schema.tableSize;
 
     std::unique_ptr<Projection> sansForeignKeys = std::make_unique<Projection>(frontEndSelCols, std::move( jn ), jnSchema);
 
