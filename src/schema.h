@@ -1,5 +1,5 @@
-#ifndef SCHEMA_LOADER_H
-#define SCHEMA_LOADER_H
+#ifndef get_schema_H
+#define get_schema_H
 #include<string>
 #include<map>
 
@@ -13,6 +13,6 @@ struct Schema
   std::map<std::string, int> columnKeys;
 };
 
-Schema schema_loader(std::string tableName);
+Schema get_schema(std::string tableName);
 
 #endif

@@ -15,7 +15,7 @@
 //
 class FileScanTest : public ::testing::Test {
   protected:
-    Schema tblSchema = schema_loader("test_data");
+    Schema tblSchema = get_schema("test_data");
     FileScan fs{ tblSchema };
 };
 
@@ -25,7 +25,7 @@ TEST_F(FileScanTest, TestNext) {
   EXPECT_EQ(row[0], "movieId");
   EXPECT_EQ(row[1], "title");
   EXPECT_EQ(row[2], "genres");
-  
+
   row = fs.next();
   std::vector<std::string> expectProperCommaHandling{ "1","\"A Movie Title, With Commas, In the Title\"","Adventure|Animation|Children|Comedy|Fantasy" };
   EXPECT_EQ(expectProperCommaHandling, row);
@@ -35,7 +35,7 @@ TEST_F(FileScanTest, TestNext) {
 // Select nodes use WHERE clauses to filter table data by rows
 class SelectionTest : public ::testing::Test {
   protected:
-    Schema schema = schema_loader("test_data");
+    Schema schema = get_schema("test_data");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
 };
@@ -57,7 +57,7 @@ TEST_F(SelectionTest, TestNext) {
 // Until my QueryPlanner is more ideal, any empty WHERE clause admits all rows.
 class StarTest : public ::testing::Test {
   protected:
-    Schema schema = schema_loader("test_data");
+    Schema schema = get_schema("test_data");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{};
 };
@@ -67,7 +67,7 @@ TEST_F(StarTest, TestSelectStarNext) {
   Selection select{ where, std::move( fs ), schema };
 
   // All rows in test_data will be returned
-  std::vector<std::vector<std::string> > expectedResult{ 
+  std::vector<std::vector<std::string> > expectedResult{
     { "movieId", "title", "genres" },
     { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
     { "2", "The Fall", "Adventure|Fantasy" },
@@ -90,7 +90,7 @@ TEST_F(StarTest, TestSelectStarNext) {
 // SELECT title FROM test_data entails that only the title column from each row be returned.
 class ProjectionTest : public ::testing::Test {
   protected:
-    Schema schema = schema_loader("test_data");
+    Schema schema = get_schema("test_data");
     std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> col_names{ "title", "genres" };
     std::vector<std::string> where;
@@ -140,14 +140,14 @@ TEST_F(ProjectionTest, Rewind) {
 // R and S tables.
 class JoinTest : public ::testing::Test {
   protected:
-    Schema schema = schema_loader("test_data");
+    Schema schema = get_schema("test_data");
     std::unique_ptr<FileScan> tableR = std::make_unique<FileScan>(schema);
     std::unique_ptr<FileScan> tableS = std::make_unique<FileScan>(schema);
 
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
     std::vector<std::string> col_names{  "movieId", "title", };
     std::vector<std::string> keys{ "movieId", "movieId" };
-    Schema tblSchema = schema_loader("test_data");
+    Schema tblSchema = get_schema("test_data");
 };
 
 TEST_F(JoinTest, TestNext) {
@@ -175,7 +175,7 @@ TEST_F(JoinTest, TestNext) {
 
 // Tests for Tokenizer
 // The Tokenizer analyzes user input into semantically meaningful units
-// so that the QueryPlanner can understand how to build an appropriate 
+// so that the QueryPlanner can understand how to build an appropriate
 // pipeline of query plan nodes.
 class TokenizerTest : public ::testing::Test {
   protected:
@@ -246,11 +246,11 @@ class QueryPlannerTest : public ::testing::Test {
     std::vector<char*> argv;
 };
 TEST_F(QueryPlannerTest, Run) {
-  std::vector<std::vector<std::string> > expectedResult{ 
+  std::vector<std::vector<std::string> > expectedResult{
     { "movieId", "title", "genres" },
     { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
     { "2", "The Fall", "Adventure|Fantasy" },
-    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" } 
+    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" }
   };
 
   for (const auto& arg : arguments)
@@ -271,7 +271,7 @@ class QueryWithProjectionTest : public ::testing::Test {
 };
 
 TEST_F(QueryWithProjectionTest, Run) {
-  std::vector<std::vector<std::string> > expectedResult{ 
+  std::vector<std::vector<std::string> > expectedResult{
     { "title" },
     { "\"A Movie Title, With Commas, In the Title\"" },
     { "The Fall"},

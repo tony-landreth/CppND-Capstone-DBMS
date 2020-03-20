@@ -99,7 +99,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 
   // Build rFileScan Node
   std::string tblName = queryData_["FROM"][0];
-  Schema schema = schema_loader(tblName);
+  Schema schema = get_schema(tblName);
   int frmTableSize = schema.tableSize;
   std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(schema);
   frmFs->scanFile();
@@ -139,7 +139,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     // Add JOIN keys to projection node
     std::vector<std::string> jnParams = queryData_["JOIN"];
     std::string sTblName = jnParams[0];
-    sTblSchema = schema_loader(sTblName);
+    sTblSchema = get_schema(sTblName);
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
 
     // TODO: create a separate selCols, i.e. rSelCols and sSeCols
@@ -160,7 +160,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::vector<std::string> jnParams = queryData_["JOIN"];
     // Build sFileScan Node
     std::string sTblName = jnParams[0];
-    sTblSchema = schema_loader(sTblName);
+    sTblSchema = get_schema(sTblName);
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
     std::unique_ptr<FileScan> sFrmFs = std::make_unique<FileScan>(sTblSchema);
     sFrmFs->scanFile();
