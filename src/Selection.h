@@ -4,6 +4,12 @@
 #include<string>
 #include<map>
 
+/*
+   Selection nodes process WHERE clauses in SELECT statements.
+   For example, `SELECT * FROM test_data where movieId = 3;`
+   will return only rows where movieId is equal to 3.
+*/
+
 class Selection : public PlanNode
 {
   public:
