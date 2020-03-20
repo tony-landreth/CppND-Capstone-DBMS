@@ -22,13 +22,13 @@ class Join : public PlanNode
     TableSchema getSchema();
 
     // Variable declarations
-    TableSchema schema;
     std::vector<std::string> keys;
 
   private:
     // Method declarations
 
     // Variable declarations
+    TableSchema schema_;
     std::vector<int> foreignKeys_;
     int rTableSize_;
     int sTableSize_;

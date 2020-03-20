@@ -4,11 +4,11 @@
 
 
 Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, TableSchema rsch, TableSchema ssch) : r_(std::move( r )), s_(std::move( s )), keys(k), r_schema_(rsch), s_schema_(ssch) {
-  schema.tableName = "virtual";
+  schema_.tableName = "virtual";
 }
 
 TableSchema Join::getSchema(){
-  return schema;
+  return schema_;
 }
 
 std::vector<std::string> Join::next() {
