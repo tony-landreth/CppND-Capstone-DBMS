@@ -22,8 +22,6 @@ class Join : public PlanNode
     TableSchema getSchema();
 
     // Variable declarations
-    int rTableSize;
-    int sTableSize;
     TableSchema schema;
     std::vector<int> foreignKeys;
     std::vector<std::string> keys;
@@ -32,6 +30,8 @@ class Join : public PlanNode
     // Method declarations
 
     // Variable declarations
+    int rTableSize_;
+    int sTableSize_;
     std::unique_ptr<Projection> r_;
     std::unique_ptr<Projection> s_;
     int rowIdx = 0;
