@@ -1,7 +1,7 @@
 #include "Projection.h"
 #include "schema_loader.h"
 
-Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, TableSchema sch) : column_names_(column_names), sel_(std::move( sel )), schema(sch) {};
+Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, TableSchema sch) : keys(column_names), sel_(std::move( sel )), schema(sch) {};
 
 std::vector<std::string> Projection::next(){
 
@@ -23,9 +23,9 @@ std::vector<std::string> Projection::next(){
       std::vector<int> selColMap(row.size(), -1);
 
       // Match each column name to its position in the header row
-      for(int i = 0; i < column_names_.size(); i++){
+      for(int i = 0; i < keys.size(); i++){
         for(int j = 0; j < row.size(); j++){
-          if(( selColMap[j] == -1 ) && ( column_names_[i] == row[j] )){
+          if(( selColMap[j] == -1 ) && ( keys[i] == row[j] )){
             selColMap[j] = j;
           }
         }
@@ -42,8 +42,8 @@ std::vector<std::string> Projection::next(){
       rowIdx_++;
       colMap = schema.columnKeys;
 
-      for(int i = 0; i < column_names_.size(); i++){
-        std::string col_name = column_names_[i];
+      for(int i = 0; i < keys.size(); i++){
+        std::string col_name = keys[i];
 
         int idx = colMap[col_name];
         colKeys.push_back(idx);
