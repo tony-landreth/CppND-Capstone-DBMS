@@ -1,6 +1,6 @@
 #include "Projection.h"
 #include "Join.h"
-#include "schema_loader.h"
+#include "schema.h"
 
 
 Join::Join(std::unique_ptr<Projection> r, std::unique_ptr<Projection> s, std::vector<std::string> k, Schema rsch, Schema ssch) : r_(std::move( r )), s_(std::move( s )), keys(k), r_schema_(rsch), s_schema_(ssch) {

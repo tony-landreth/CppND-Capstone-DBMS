@@ -1,6 +1,6 @@
 #ifndef PLANNODE_H
 #define PLANNODE_H
-#include "schema_loader.h"
+#include "schema.h"
 #include<string>
 
 class PlanNode

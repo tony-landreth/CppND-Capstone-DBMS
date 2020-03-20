@@ -1,5 +1,5 @@
 #include "Projection.h"
-#include "schema_loader.h"
+#include "schema.h"
 
 Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, Schema sch) : keys(column_names), sel_(std::move( sel )), schema_(sch) {};
 

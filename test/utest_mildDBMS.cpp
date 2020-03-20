@@ -5,7 +5,7 @@
 #include "../src/Projection.h"
 #include "../src/Join.h"
 #include "../src/QueryPlanner.h"
-#include "../src/schema_loader.h"
+#include "../src/schema.h"
 
 // Tests for FileScanTest
 //

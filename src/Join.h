@@ -5,7 +5,7 @@
 #include<string>
 #include<vector>
 #include<map>
-#include "schema_loader.h"
+#include "schema.h"
 
 class Join : public PlanNode
 {

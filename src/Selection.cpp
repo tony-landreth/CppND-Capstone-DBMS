@@ -1,5 +1,5 @@
 #include "Selection.h"
-#include "schema_loader.h"
+#include "schema.h"
 
 Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs, Schema sch) : keys(where), fs_(std::move(fs)), schema_(sch) {};
 
