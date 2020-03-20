@@ -47,7 +47,7 @@ std::vector<std::string> Join::next() {
     for(int i = 0; i < keys.size(); i++){
       for(int j = 0; j < result_row.size(); j++){
         if(( keyMap[j] == 0 ) && ( keys[i] == result_row[j] )){
-          foreignKeys.push_back(i);
+          foreignKeys_.push_back(i);
           keyMap[j] = 1;
         }
       }
@@ -56,8 +56,8 @@ std::vector<std::string> Join::next() {
     return result_row;
   }
 
-  int r_colID = foreignKeys[0];
-  int s_colID = foreignKeys[1];
+  int r_colID = foreignKeys_[0];
+  int s_colID = foreignKeys_[1];
 
   if(r_row.size() > 0) {
     r_col = r_row[r_colID];
