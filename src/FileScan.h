@@ -19,7 +19,6 @@ class FileScan : public PlanNode
     void scanFile();
 
     // Variable declarations
-    std::string tableName;
     TableSchema schema;
 
   private:

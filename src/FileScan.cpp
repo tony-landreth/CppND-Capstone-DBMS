@@ -11,7 +11,7 @@ void FileScan::scanFile() {
   fileStream_.open(fileName.str());
 
   if(!fileStream_) {
-    std::cerr << "No table named " << tableName << std::endl;
+    std::cerr << "No table named " << schema.tableName << std::endl;
     exit(1);
   }
 
