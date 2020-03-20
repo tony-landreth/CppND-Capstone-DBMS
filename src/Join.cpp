@@ -13,7 +13,6 @@ TableSchema Join::getSchema(){
 
 std::vector<std::string> Join::next() {
   rTableSize_ = r_schema_.tableSize;
-  // TODO: Figure out why this + 1 is relevant and refactor
   sTableSize_ = s_schema_.tableSize + 1;
 
   std::vector<std::string> result;
@@ -69,7 +68,7 @@ std::vector<std::string> Join::next() {
         s_col = s_row[s_colID];
 
         if(r_col == s_col) {
-          schema.tableSize++;
+          schema_.tableSize++;
           std::vector<std::string> result_row;
           std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
           std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));
