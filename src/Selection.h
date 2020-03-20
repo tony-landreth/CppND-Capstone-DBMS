@@ -13,7 +13,6 @@ class Selection : public PlanNode
     void rewind(){};
 
     // Variable declarations
-    TableSchema schema;
     std::vector<std::string> keys;
 
   private:
