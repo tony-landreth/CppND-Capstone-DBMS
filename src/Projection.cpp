@@ -1,7 +1,7 @@
 #include "Projection.h"
 #include "schema_loader.h"
 
-Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, TableSchema sch) : keys(column_names), sel_(std::move( sel )), schema(sch) {};
+Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, TableSchema sch) : keys(column_names), sel_(std::move( sel )), schema_(sch) {};
 
 std::vector<std::string> Projection::next(){
 
@@ -12,7 +12,7 @@ std::vector<std::string> Projection::next(){
   std::vector<std::string> colHeaders;
 
 
-  if(schema.tableName == "virtual"){
+  if(schema_.tableName == "virtual"){
     if(rowIdx_ == 0){
       rowIdx_++;
 
@@ -38,7 +38,7 @@ std::vector<std::string> Projection::next(){
   } else {
     if(rowIdx_ == 0){
       rowIdx_++;
-      colMap = schema.columnKeys;
+      colMap = schema_.columnKeys;
 
       for(int i = 0; i < keys.size(); i++){
         std::string col_name = keys[i];
@@ -65,15 +65,15 @@ std::vector<std::string> Projection::next(){
 }
 
 void Projection::rewind(){
-  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
+  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema_);
   fs->scanFile();
 
   if(sel_->keys.size() > 0) {
-    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs), schema);
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs), schema_);
     sel_ = std::move(s);
   } else {
   std::vector<std::string> where;
-    std::unique_ptr<Selection> s = std::make_unique<Selection>(where, std::move(fs), schema);
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(where, std::move(fs), schema_);
     sel_ = std::move(s);
   }
 }

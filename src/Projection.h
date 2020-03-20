@@ -13,13 +13,13 @@ class Projection : public PlanNode
     void rewind();
 
     // Variable declarations
-    TableSchema schema;
     std::vector<std::string> keys;
 
   private:
     // Method declarations
 
     // Variable declarations
+    TableSchema schema_;
     std::unique_ptr<PlanNode> sel_;
     int rowIdx_ = 0;
     std::vector<int> colKeys;
