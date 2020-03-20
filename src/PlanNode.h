@@ -14,6 +14,9 @@ class PlanNode
     // Variable declarations
     TableSchema schema;
     std::vector<std::string> keys;
+
+  private:
+    TableSchema schema_;
 };
 
 #endif

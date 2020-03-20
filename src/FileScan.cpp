@@ -1,17 +1,17 @@
 #include "FileScan.h"
 
-FileScan::FileScan(TableSchema sch) : schema(sch){};
+FileScan::FileScan(TableSchema sch) : schema_(sch){};
 
 
 //TODO: scanFile should run on init
 void FileScan::scanFile() {
   std::stringstream fileName;
-  fileName << "../test/" << schema.tableName << ".csv";
+  fileName << "../test/" << schema_.tableName << ".csv";
 
   fileStream_.open(fileName.str());
 
   if(!fileStream_) {
-    std::cerr << "No table named " << schema.tableName << std::endl;
+    std::cerr << "No table named " << schema_.tableName << std::endl;
     exit(1);
   }
 

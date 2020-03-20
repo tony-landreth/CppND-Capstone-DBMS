@@ -38,8 +38,7 @@ class SelectionTest : public ::testing::Test {
 
 TEST_F(SelectionTest, TestNext) {
   fs->scanFile();
-  TableSchema sch = fs->schema;
-  Selection select{ where, std::move( fs ), sch };
+  Selection select{ where, std::move( fs ), schema };
   // Advance to a row where title = "The Fall"
   select.next();
   select.next();

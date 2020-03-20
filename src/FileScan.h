@@ -26,6 +26,7 @@ class FileScan : public PlanNode
     std::vector<std::string> next_();
 
     // Variable declarations
+    TableSchema schema_;
     int idx_for_next_;
     std::vector<std::vector<std::string> > relation_;
     std::ifstream fileStream_;
