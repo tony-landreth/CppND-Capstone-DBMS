@@ -1,7 +1,7 @@
 #include "Selection.h"
 #include "schema_loader.h"
 
-Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs, TableSchema sch) : keys(where), fs_(std::move(fs)), schema(sch) {};
+Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs, TableSchema sch) : keys(where), fs_(std::move(fs)), schema_(sch) {};
 
 std::vector<std::string> Selection::next()
 {
@@ -23,7 +23,7 @@ std::vector<std::string> Selection::next()
     std::string val = keys[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
     if(op == "EQUALS") {
-      std::map<std::string, int> colKeys = schema.columnKeys;
+      std::map<std::string, int> colKeys = schema_.columnKeys;
       int colNum = colKeys[key];
 
       // Return when the row contains only the empty string

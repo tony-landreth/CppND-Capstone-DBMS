@@ -20,6 +20,7 @@ class Selection : public PlanNode
     // Method declarations
 
     // Variable declarations
+    TableSchema schema_;
     std::unique_ptr<FileScan> fs_;
     int rowIdx_ = 0;
 };
