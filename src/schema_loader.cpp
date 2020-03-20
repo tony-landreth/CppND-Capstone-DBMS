@@ -1,6 +1,6 @@
 #include "schema_loader.h"
 
-// Hardcode the schema until write operations are implemented.
+// Hardcodes the schema until write operations are implemented.
 // Notably, the code below does not mark foreign keys and primary
 // keys as such.
 

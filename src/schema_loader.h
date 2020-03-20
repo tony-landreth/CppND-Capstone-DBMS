@@ -3,6 +3,9 @@
 #include<string>
 #include<map>
 
+// TableSchema maintains a representation of the shape of
+// data as it passes from files reads through a pipeline of
+// PlanNodes.
 struct TableSchema
 {
   std::string tableName;
