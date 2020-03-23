@@ -1,16 +1,34 @@
 #include "QueryPlanner.h"
-#include <algorithm>
 
 QueryPlanner::QueryPlanner(int argc, char** argv) : argc_(argc), argv_(argv) {};
 
 std::vector<std::vector<std::string> > QueryPlanner::binProjectionKeys(std::vector<std::string> prjKeys){
+  std::map<std::string, std::vector<std::string> > bins;
   std::vector<std::vector<std::string> > result;
+  char const del = '.';
   std::string firstKey = prjKeys[0];
 
   // If the first key contains a dot, you're dealing with a JOIN
   if( firstKey.find(".") != std::string::npos ){
-    // Found a dot
+    for(std::string str : prjKeys) {
+      std::vector<std::string> s = split(str, del);
+      std::string tableKey = s[0];
+      std::string colKey = s[1];
+      
+      // If table key doesn't have a bin, make one and add column key
+      if ( bins.find(tableKey) == bins.end() ) {
+        std::vector<std::string> colKeyV{ colKey };
+        bins.insert({ tableKey, colKeyV });
+      } else {
+        bins[tableKey].push_back(colKey);
+      }
+    }
+    std::map<std::string, std::vector<std::string> >::iterator it = bins.begin();
 
+    while(it != bins.end()){
+      result.push_back(it->second);
+      it++;
+    }
   } else {
 
   }
