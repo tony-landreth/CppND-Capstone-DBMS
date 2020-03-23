@@ -63,9 +63,7 @@ std::vector<std::vector<std::string> > QueryPlanner::buildFrontEndColumnNames(st
     result.push_back(allCols);
     return result;
   } else {
-
-    result.push_back(columnNames);
-    return result;
+    return binProjectionKeys(columnNames);
   }
 }
 
