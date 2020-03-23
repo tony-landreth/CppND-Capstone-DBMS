@@ -13,6 +13,7 @@
 #include "Projection.h"
 #include "Join.h"
 #include "Tokenizer.h"
+#include "utilities.h"
 
 /*
    QueryPlanner determines which PlanNodes need to be instantiated
@@ -21,8 +22,10 @@
 class QueryPlanner{
   public:
     // Method declarations
+    QueryPlanner(){};
     QueryPlanner(int argc, char** argv);
     std::vector<std::vector<std::string> > run();
+    std::vector<std::vector<std::string> > binProjectionKeys(std::vector<std::string> prjKeys);
 
     // Variable declarations
 

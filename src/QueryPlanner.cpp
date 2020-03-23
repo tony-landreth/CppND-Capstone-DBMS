@@ -3,6 +3,21 @@
 
 QueryPlanner::QueryPlanner(int argc, char** argv) : argc_(argc), argv_(argv) {};
 
+std::vector<std::vector<std::string> > QueryPlanner::binProjectionKeys(std::vector<std::string> prjKeys){
+  std::vector<std::vector<std::string> > result;
+  std::string firstKey = prjKeys[0];
+
+  // If the first key contains a dot, you're dealing with a JOIN
+  if( firstKey.find(".") != std::string::npos ){
+    // Found a dot
+
+  } else {
+
+  }
+
+  return result;
+};
+
 TokenTree QueryPlanner::tokenize()
 {
   Tokenizer t;

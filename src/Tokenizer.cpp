@@ -14,7 +14,6 @@ std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v
   return *v;
 }
 
-// TODO: You should mark EOQ if you go 200 hundred tokens without a semi-colon
 void Tokenizer::checkForEOQ(){
   std::string stop_char = ";";
 

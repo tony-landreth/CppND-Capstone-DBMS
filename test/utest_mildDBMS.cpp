@@ -240,6 +240,20 @@ TEST_F(TokenizerWithWhereJoinTest, Tokenize) {
 // Tests for QueryPlanner
 // The QueryPlanner reads in a TokenTree, generates an intermediate representation
 // and composes a pipeline of query PlanNodes to return requested data.
+
+class binProjectionKeysTest : public ::testing::Test {
+  protected:
+    QueryPlanner qp;
+};
+
+TEST_F(binProjectionKeysTest, binProjectionKeys) {
+  std::vector<std::string> selClause{ "movies.title", "ratings.rating" };
+  std::vector<std::vector<std::string> > result = qp.binProjectionKeys(selClause);
+  std::vector<std::vector<std::string> > expectedResult{ { "title" }, { "rating" } };
+
+  EXPECT_EQ(result, expectedResult);
+}
+
 class QueryPlannerTest : public ::testing::Test {
   protected:
     std::vector<std::string> arguments = {"./mildDBMS", "SELECT * FROM test_data;"};
