@@ -2,6 +2,9 @@
 
 QueryPlanner::QueryPlanner(int argc, char** argv) : argc_(argc), argv_(argv) {};
 
+// For JOIN queries, column names should be of the form tableName.columnName
+// In this method, column names get binned to their respective table in preparation
+// To initialize separate Projection nodes for each set of column names
 std::vector<std::vector<std::string> > QueryPlanner::binProjectionKeys(std::vector<std::string> prjKeys){
   std::map<std::string, std::vector<std::string> > bins;
   std::vector<std::vector<std::string> > result;
@@ -46,7 +49,7 @@ TokenTree QueryPlanner::tokenize()
   return tt;
 };
 
-// Convert token tree to map to simplify logic when building query
+// Convert token tree into map to simplify logic when building query
 std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTree root) {
   int treeSize = root.children.size();
 
