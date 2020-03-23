@@ -41,7 +41,9 @@ std::vector<std::vector<std::string> > QueryPlanner::binProjectionKeys(std::vect
   return result;
 };
 
-std::vector<std::string> QueryPlanner::buildFrontEndColumnNames(std::vector<std::string> columnNames, Schema schema){
+std::vector<std::vector<std::string> > QueryPlanner::buildFrontEndColumnNames(std::vector<std::string> columnNames, Schema schema){
+  std::vector<std::vector<std::string> > result;
+
   if(columnNames[0] == "*"){
     std::vector<std::string> allCols;
     std::vector<int> allIdxs;
@@ -58,9 +60,12 @@ std::vector<std::string> QueryPlanner::buildFrontEndColumnNames(std::vector<std:
       allCols.push_back(revMap[i]);
     }
 
-    return allCols;
+    result.push_back(allCols);
+    return result;
   } else {
-    return columnNames;
+
+    result.push_back(columnNames);
+    return result;
   }
 }
 
@@ -169,9 +174,33 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   where = queryData_["WHERE"];
 
   // Determine which columns will be displayed to the user
-  std::vector<std::string> frontEndSelCols = buildFrontEndColumnNames(queryData_["SELECT"], schema);
+  std::vector<std::vector<std::string> > projectionBins = buildFrontEndColumnNames(queryData_["SELECT"], schema);
+  // Collect columns required to build user-facing results
+  std::vector<std::string> frontEndSelCols;
   // Collect columns required to build intermediate query results
-  std::vector<std::string> backEndSelCols = frontEndSelCols;
+  std::vector<std::string> rBackEndSelCols;
+  std::vector<std::string> sBackEndSelCols;
+
+  if(projectionBins.size() == 2){
+    rBackEndSelCols = projectionBins[0];
+    sBackEndSelCols = projectionBins[1];
+
+    frontEndSelCols.reserve(projectionBins[0].size() + projectionBins[1].size());
+    frontEndSelCols.insert( frontEndSelCols.end(), rBackEndSelCols.begin(), rBackEndSelCols.end() );
+    frontEndSelCols.insert( frontEndSelCols.end(), sBackEndSelCols.begin(), sBackEndSelCols.end() );
+
+    std::cout << "frontEndSelCols\n";
+    for(std::string str : frontEndSelCols){
+      std::cout << " " << str << " ";
+    }
+    std::cout << "\n";
+  } else{
+    rBackEndSelCols = projectionBins[0];
+    sBackEndSelCols = projectionBins[0];
+    frontEndSelCols = projectionBins[0];
+  }
+
+  // TODO: move this after jn check and join frontEndSelCols[0] and [1] if there is a 1
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), schema);
 
   // Build Projection Node
@@ -185,15 +214,19 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     sTblSchema = get_schema(sTblName);
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
 
-    // TODO: create a separate selCols, i.e. rSelCols and sSeCols
-    // So you can handle foreign keys with different names
     for(std::string k : jnKeys){
-      if(std::find(backEndSelCols.begin(), backEndSelCols.end(), k) == backEndSelCols.end()){
-        backEndSelCols.push_back(k);
+      if(std::find(rBackEndSelCols.begin(), rBackEndSelCols.end(), k) == rBackEndSelCols.end()){
+        rBackEndSelCols.push_back(k);
       }
     } 
 
-    prjR = std::make_unique<Projection>(backEndSelCols, std::move( sel ), schema);
+    for(std::string k : jnKeys){
+      if(std::find(sBackEndSelCols.begin(), sBackEndSelCols.end(), k) == sBackEndSelCols.end()){
+        sBackEndSelCols.push_back(k);
+      }
+    } 
+
+    prjR = std::make_unique<Projection>(rBackEndSelCols, std::move( sel ), schema);
   } else {
     prjR = std::make_unique<Projection>(frontEndSelCols, std::move( sel ), schema);
   }
@@ -212,7 +245,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs), schema);
 
     // Build sProjection
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(backEndSelCols, std::move( sSel ), schema);
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(sBackEndSelCols, std::move( sSel ), schema);
     std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, schema);
 
     // Get the Join node's representation of the data it will return

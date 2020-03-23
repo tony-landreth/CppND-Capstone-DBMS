@@ -26,7 +26,7 @@ class QueryPlanner{
     QueryPlanner(int argc, char** argv);
     std::vector<std::vector<std::string> > run();
     std::vector<std::vector<std::string> > binProjectionKeys(std::vector<std::string> prjKeys);
-    std::vector<std::string> buildFrontEndColumnNames(std::vector<std::string> columnNames, Schema schema);
+    std::vector<std::vector<std::string> > buildFrontEndColumnNames(std::vector<std::string> columnNames, Schema schema);
 
     // Variable declarations
 
