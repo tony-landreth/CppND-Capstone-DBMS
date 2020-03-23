@@ -23,6 +23,8 @@ std::vector<std::vector<std::string> > QueryPlanner::binProjectionKeys(std::vect
         bins[tableKey].push_back(colKey);
       }
     }
+
+    // Push the contents of each bin into the result vector
     std::map<std::string, std::vector<std::string> >::iterator it = bins.begin();
 
     while(it != bins.end()){
@@ -30,7 +32,7 @@ std::vector<std::vector<std::string> > QueryPlanner::binProjectionKeys(std::vect
       it++;
     }
   } else {
-
+    result.push_back(prjKeys);
   }
 
   return result;

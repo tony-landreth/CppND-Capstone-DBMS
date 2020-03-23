@@ -246,10 +246,18 @@ class binProjectionKeysTest : public ::testing::Test {
     QueryPlanner qp;
 };
 
-TEST_F(binProjectionKeysTest, binProjectionKeys) {
+TEST_F(binProjectionKeysTest, binProjectionKeysWithDots) {
   std::vector<std::string> selClause{ "movies.title", "ratings.rating" };
   std::vector<std::vector<std::string> > result = qp.binProjectionKeys(selClause);
   std::vector<std::vector<std::string> > expectedResult{ { "title" }, { "rating" } };
+
+  EXPECT_EQ(result, expectedResult);
+}
+
+TEST_F(binProjectionKeysTest, binProjectionKeysNoDots) {
+  std::vector<std::string> selClause{ "title", "movieId" };
+  std::vector<std::vector<std::string> > result = qp.binProjectionKeys(selClause);
+  std::vector<std::vector<std::string> > expectedResult{ { "title" , "movieId" } };
 
   EXPECT_EQ(result, expectedResult);
 }
