@@ -41,6 +41,29 @@ std::vector<std::vector<std::string> > QueryPlanner::binProjectionKeys(std::vect
   return result;
 };
 
+std::vector<std::string> QueryPlanner::buildFrontEndColumnNames(std::vector<std::string> columnNames, Schema schema){
+  if(columnNames[0] == "*"){
+    std::vector<std::string> allCols;
+    std::vector<int> allIdxs;
+    std::map<int, std::string> revMap;
+    std::map<std::string, int> colKeys = schema.columnKeys;
+
+    for(const auto &x: colKeys){
+      revMap[x.second] = x.first;
+      allIdxs.push_back(x.second);
+    }
+
+    sort(allIdxs.begin(), allIdxs.end());
+    for(int i = 0; i < allIdxs.size(); i++){
+      allCols.push_back(revMap[i]);
+    }
+
+    return allCols;
+  } else {
+    return columnNames;
+  }
+}
+
 TokenTree QueryPlanner::tokenize()
 {
   Tokenizer t;
@@ -146,25 +169,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   where = queryData_["WHERE"];
 
   // Determine which columns will be displayed to the user
-  std::vector<std::string> frontEndSelCols = queryData_["SELECT"];
-  if(frontEndSelCols[0] == "*"){
-    std::vector<std::string> allCols;
-    std::vector<int> allIdxs;
-    std::map<int, std::string> revMap;
-    std::map<std::string, int> colKeys = schema.columnKeys;
-
-    for(const auto &x: colKeys){
-      revMap[x.second] = x.first;
-      allIdxs.push_back(x.second);
-    }
-
-    sort(allIdxs.begin(), allIdxs.end());
-    for(int i = 0; i < allIdxs.size(); i++){
-      allCols.push_back(revMap[i]);
-    }
-
-    frontEndSelCols = allCols;
-  }
+  std::vector<std::string> frontEndSelCols = buildFrontEndColumnNames(queryData_["SELECT"], schema);
   // Collect columns required to build intermediate query results
   std::vector<std::string> backEndSelCols = frontEndSelCols;
   std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), schema);
