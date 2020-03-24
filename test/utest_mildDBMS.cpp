@@ -221,13 +221,15 @@ TEST_F(TokenTreeTest, Find){
   root.children.push_back(join);
   root.children.push_back(where);
 
+  // Should find
+  TokenTree result = root.find("FROM");
   std::string expectedResult = "FROM";
-//  std::vector<TokenTree> tt;
-//  std::vector<TokenTree> *fetch = root.fetchNode("FROM", tt);
-//  std::vector<TokenTree> rFetch = *fetch;
-//  TokenTree result = rFetch[0];
+  EXPECT_EQ(result.token, expectedResult);
 
-//  EXPECT_EQ(result.token, expectedResult);
+  // Should not find
+  result = root.find("KENTUCKY");
+  expectedResult = "NOT FOUND";
+  EXPECT_EQ(result.token, expectedResult);
 }
 
 class TokenizerTest : public ::testing::Test {

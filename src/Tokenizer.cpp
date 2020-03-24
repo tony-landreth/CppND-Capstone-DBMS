@@ -29,6 +29,18 @@ std::vector<TokenTree> TokenTree::fetchNode(std::string tkn, std::vector<TokenTr
   return *v;
 }
 
+TokenTree TokenTree::find(std::string token) {
+  std::vector<TokenTree> tt;
+  TokenTree notFound("NOT FOUND");
+  fetchNode(token, &tt);
+
+  if(tt.size() > 0){
+    return tt[0];
+  } else {
+    return notFound;
+  }
+};
+
 void Tokenizer::checkForEOQ(){
   std::string stop_char = ";";
 

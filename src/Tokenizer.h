@@ -16,11 +16,16 @@ class TokenTree
     TokenTree(){};
     TokenTree(std::string token);
     std::vector<std::string> depthFirstSearch(std::vector<std::string> *v);
-    std::vector<TokenTree> fetchNode(std::string tkn, std::vector<TokenTree> *tt);
+    TokenTree find(std::string token);
 
     //Variable declarations
     std::vector<TokenTree> children;
     std::string token;
+
+  private:
+    // Method declarations
+    std::vector<TokenTree> fetchNode(std::string tkn, std::vector<TokenTree> *tt);
+    
 };
 
 /*
