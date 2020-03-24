@@ -77,7 +77,6 @@ TokenTree QueryPlanner::tokenize()
 
 // Convert token tree into map to simplify logic when building query
 std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTree root) {
-  std::cout << "BEFORE\n";
   int treeSize = root.children.size();
   std::vector<std::string> selCols;
   std::vector<TokenTree> selChildren = select_->children;
@@ -157,9 +156,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   tokenTree_ = tokenize();
   std::vector<std::string> where;
 
-//  std::cout << "FROM CHILDREN SIZE " << from_->children.size() << std::endl;
-//  std::cout << "FROM exist? " << from_->exist() << std::endl;
-
   detectClauses(); // Set flags for clauses detected in queryData_
   std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tokenTree_);
 
@@ -171,12 +167,11 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   // Build rFileScan Node
-
-  std::string tblName = queryData_["FROM"][0];
+  std::string tblName = from_->children[0].token;
   Schema schema = get_schema(tblName);
   int frmTableSize = schema.tableSize;
-  std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(schema);
-  frmFs->scanFile();
+  std::unique_ptr<FileScan> rFs = std::make_unique<FileScan>(schema);
+  rFs->scanFile();
 
   // Build SELECTION Node
   where = queryData_["WHERE"];
@@ -208,7 +203,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   // TODO: move this after jn check and join frontEndSelCols[0] and [1] if there is a 1
-  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), schema);
+  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(rFs), schema);
 
   // Build Projection Node
   std::unique_ptr<Projection> prjR;
@@ -241,15 +236,16 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // Build Join Node
   if(jnPresent_ ){
     std::vector<std::string> jnParams = queryData_["JOIN"];
+
     // Build sFileScan Node
     std::string sTblName = jnParams[0];
     sTblSchema = get_schema(sTblName);
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
-    std::unique_ptr<FileScan> sFrmFs = std::make_unique<FileScan>(sTblSchema);
-    sFrmFs->scanFile();
+    std::unique_ptr<FileScan> sFs = std::make_unique<FileScan>(sTblSchema);
+    sFs->scanFile();
 
     // Build sSelection Node
-    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs), schema);
+    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFs), schema);
 
     // Build sProjection
     std::unique_ptr<Projection> prjS = std::make_unique<Projection>(sBackEndSelCols, std::move( sSel ), schema);
