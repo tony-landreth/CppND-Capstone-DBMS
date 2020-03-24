@@ -128,21 +128,21 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTre
 }
 
 void QueryPlanner::detectClauses(){
-  TokenTree select = tokenTree_.find("SELECT");
-  TokenTree from = tokenTree_.find("FROM");
-  TokenTree where = tokenTree_.find("WHERE");
-  TokenTree join = tokenTree_.find("JOIN");
+  select_ = tokenTree_.find("SELECT");
+  from_ = tokenTree_.find("FROM");
+  where_ = tokenTree_.find("WHERE");
+  join_ = tokenTree_.find("JOIN");
 
-  if ( select.exist() )
+  if ( select_.exist() )
     selPresent_ = true;
 
-  if ( from.exist() )
+  if ( from_.exist() )
     frmPresent_ = true; // found
 
-  if ( where.exist() )
+  if ( where_.exist() )
     whrPresent_ = true; // found
 
-  if ( join.exist() )
+  if ( join_.exist() )
     jnPresent_ = true; // found
 }
 
