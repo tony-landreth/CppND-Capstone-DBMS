@@ -1,20 +1,17 @@
 #include "FileScan.h"
 
-FileScan::FileScan(std::string tableName) : tableName(tableName){
-  tableSize = 0;
-};
+FileScan::FileScan(Schema sch) : schema_(sch){};
 
 
 //TODO: scanFile should run on init
 void FileScan::scanFile() {
-  schema = schema_loader(tableName);
-
   std::stringstream fileName;
-  fileName << "../test/" << tableName << ".csv";
+  fileName << "../test/" << schema_.tableName << ".csv";
+
   fileStream_.open(fileName.str());
 
   if(!fileStream_) {
-    std::cerr << "No table named " << tableName << std::endl;
+    std::cerr << "No table named " << schema_.tableName << std::endl;
     exit(1);
   }
 
@@ -24,7 +21,6 @@ void FileScan::scanFile() {
   while(row.size() > 0) {
     relation_.push_back(row);
     row = next_();
-    tableSize++;
   }
 
   fileStream_.close();
@@ -34,12 +30,13 @@ void FileScan::scanFile() {
 
 std::vector<std::string> FileScan::next() {
   std::vector<std::string> empty_vector;
-  std::vector<std::string> row = relation_[idx_for_next_];
-  idx_for_next_++;
 
   if(idx_for_next_ >= relation_.size()) {
     return empty_vector;
   }
+
+  std::vector<std::string> row = relation_[idx_for_next_];
+  idx_for_next_++;
 
   return row;
 }

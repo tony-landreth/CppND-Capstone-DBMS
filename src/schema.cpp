@@ -1,11 +1,11 @@
-#include "schema_loader.h"
+#include "schema.h"
 
-// Hardcode the schema until write operations are implemented.
+// Hardcodes the schema until write operations are implemented.
 // Notably, the code below does not mark foreign keys and primary
 // keys as such.
 
-TableSchema schema_loader(std::string tableName){
-  TableSchema schema;
+Schema get_schema(std::string tableName){
+  Schema schema;
   std::map<std::string, int> colKeys;
   int tableSize;
 
@@ -30,7 +30,7 @@ TableSchema schema_loader(std::string tableName){
         { "title",   1 },
         { "genres",  2 }
       };
-      tableSize = 6;
+      tableSize = 4;
   };
 
   schema.tableName = tableName;

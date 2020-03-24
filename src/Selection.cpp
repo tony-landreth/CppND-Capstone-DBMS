@@ -1,35 +1,30 @@
 #include "Selection.h"
-#include "schema_loader.h"
+#include "schema.h"
+
+Selection::Selection(std::vector<std::string> where, std::unique_ptr<FileScan> fs, Schema sch) : keys(where), fs_(std::move(fs)), schema_(sch) {};
 
 std::vector<std::string> Selection::next()
 {
-  tableName = schema.tableName;
-  keys = where;
-
-  //TODO: add tableSize to schema
-  tableSize = fs->tableSize;
-
   std::vector<std::string> empty_row;
   std::vector<std::string> row;
-  row = fs->next();
+  row = fs_->next();
 
   if(row.size() == 0)
     return empty_row;
 
-  if(rowIdx == 0) {
-    rowIdx++;
+  if(rowIdx_ == 0) {
+    rowIdx_++;
     return row;
   }
 
-  if(where.size() == 3) {
-    std::string key = where[0]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
-    std::string op = where[1];  // is either * or EQUAL for the time being
-    std::string val = where[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
+  if(keys.size() == 3) {
+    std::string key = keys[0]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
+    std::string op = keys[1];  // is either * or EQUAL for the time being
+    std::string val = keys[2]; // used to handle WHERE clauses, e.g. WHERE key EQUAL val
 
     if(op == "EQUALS") {
-      TableSchema tblSchema = schema_loader(tableName);
-      std::map<std::string, int> schema = tblSchema.columnKeys;
-      int colNum = schema[key];
+      std::map<std::string, int> colKeys = schema_.columnKeys;
+      int colNum = colKeys[key];
 
       // Return when the row contains only the empty string
       if(( row.size() <= 1 ) && (row[0].empty()))

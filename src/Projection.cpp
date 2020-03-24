@@ -1,21 +1,18 @@
 #include "Projection.h"
-#include "schema_loader.h"
+#include "schema.h"
 
-Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, TableSchema sch) : column_names_(column_names), sel_(std::move( sel )), schema(sch) {};
+Projection::Projection(std::vector<std::string> column_names, std::unique_ptr<PlanNode> sel, Schema sch) : keys(column_names), sel_(std::move( sel )), schema_(sch) {};
 
 std::vector<std::string> Projection::next(){
 
   std::vector<std::string> result;
   std::vector<std::string> row = sel_->next();
 
-  tableSize = sel_->tableSize;
-  tableName = schema.tableName;
-
   std::map<std::string,int> colMap;
   std::vector<std::string> colHeaders;
 
 
-  if(tableName == "virtual"){
+  if(schema_.tableName == "virtual"){
     if(rowIdx_ == 0){
       rowIdx_++;
 
@@ -24,9 +21,9 @@ std::vector<std::string> Projection::next(){
       std::vector<int> selColMap(row.size(), -1);
 
       // Match each column name to its position in the header row
-      for(int i = 0; i < column_names_.size(); i++){
+      for(int i = 0; i < keys.size(); i++){
         for(int j = 0; j < row.size(); j++){
-          if(( selColMap[j] == -1 ) && ( column_names_[i] == row[j] )){
+          if(( selColMap[j] == -1 ) && ( keys[i] == row[j] )){
             selColMap[j] = j;
           }
         }
@@ -41,10 +38,10 @@ std::vector<std::string> Projection::next(){
   } else {
     if(rowIdx_ == 0){
       rowIdx_++;
-      colMap = schema.columnKeys;
+      colMap = schema_.columnKeys;
 
-      for(int i = 0; i < column_names_.size(); i++){
-        std::string col_name = column_names_[i];
+      for(int i = 0; i < keys.size(); i++){
+        std::string col_name = keys[i];
 
         int idx = colMap[col_name];
         colKeys.push_back(idx);
@@ -68,15 +65,15 @@ std::vector<std::string> Projection::next(){
 }
 
 void Projection::rewind(){
-  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema.tableName);
+  std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema_);
   fs->scanFile();
 
   if(sel_->keys.size() > 0) {
-    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs), schema);
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(sel_->keys, std::move(fs), schema_);
     sel_ = std::move(s);
   } else {
   std::vector<std::string> where;
-    std::unique_ptr<Selection> s = std::make_unique<Selection>(where, std::move(fs), schema);
+    std::unique_ptr<Selection> s = std::make_unique<Selection>(where, std::move(fs), schema_);
     sel_ = std::move(s);
   }
 }

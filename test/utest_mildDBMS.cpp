@@ -5,13 +5,18 @@
 #include "../src/Projection.h"
 #include "../src/Join.h"
 #include "../src/QueryPlanner.h"
-#include "../src/schema_loader.h"
+#include "../src/schema.h"
 
 // Tests for FileScanTest
-
+//
+//  FileScan nodes scan data from disk and store it in memory.
+//  Each table in the database is its own file on disk.
+//  One FileScan node opens one file.
+//
 class FileScanTest : public ::testing::Test {
   protected:
-    FileScan fs{"test_data"};
+    Schema tblSchema = get_schema("test_data");
+    FileScan fs{ tblSchema };
 };
 
 TEST_F(FileScanTest, TestNext) {
@@ -20,24 +25,24 @@ TEST_F(FileScanTest, TestNext) {
   EXPECT_EQ(row[0], "movieId");
   EXPECT_EQ(row[1], "title");
   EXPECT_EQ(row[2], "genres");
-  
+
   row = fs.next();
   std::vector<std::string> expectProperCommaHandling{ "1","\"A Movie Title, With Commas, In the Title\"","Adventure|Animation|Children|Comedy|Fantasy" };
   EXPECT_EQ(expectProperCommaHandling, row);
 };
 
 // Tests for SELECT
-
+// Select nodes use WHERE clauses to filter table data by rows
 class SelectionTest : public ::testing::Test {
   protected:
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+    Schema schema = get_schema("test_data");
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
 };
 
 TEST_F(SelectionTest, TestNext) {
   fs->scanFile();
-  TableSchema sch = fs->schema;
-  Selection select{ where, std::move( fs ), sch };
+  Selection select{ where, std::move( fs ), schema };
   // Advance to a row where title = "The Fall"
   select.next();
   select.next();
@@ -47,18 +52,22 @@ TEST_F(SelectionTest, TestNext) {
   EXPECT_EQ(row, theFallRow);
 }
 
+// When a `SELECT * FROM table` command is issued, there should be no WHERE clause.
+// Ideally the QueryPlanner would skip instantiating a SELECT node in this case.
+// Until my QueryPlanner is more ideal, any empty WHERE clause admits all rows.
 class StarTest : public ::testing::Test {
   protected:
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+    Schema schema = get_schema("test_data");
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> where{};
 };
 
 TEST_F(StarTest, TestSelectStarNext) {
   fs->scanFile();
-  TableSchema sch = fs->schema;
-  Selection select{ where, std::move( fs ), sch };
+  Selection select{ where, std::move( fs ), schema };
 
-  std::vector<std::vector<std::string> > expectedResult{ 
+  // All rows in test_data will be returned
+  std::vector<std::vector<std::string> > expectedResult{
     { "movieId", "title", "genres" },
     { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
     { "2", "The Fall", "Adventure|Fantasy" },
@@ -66,30 +75,31 @@ TEST_F(StarTest, TestSelectStarNext) {
   };
 
   std::vector<std::vector<std::string> > results;
-  std::vector<std::string> row = select.next();
+  std::vector<std::string> row;
 
-  while(row.size() > 0) {
-    results.push_back(row);
+  for(int i = 0; i < schema.tableSize; i++) {
     row = select.next();
+    results.push_back(row);
   }
 
   EXPECT_EQ(results, expectedResult);
 }
 
 // Tests for Projection
+// Projection nodes filter all columns but those specified in a SELECT statement.
+// SELECT title FROM test_data entails that only the title column from each row be returned.
 class ProjectionTest : public ::testing::Test {
   protected:
-    TableSchema tblSchema = schema_loader("test_data");
-    std::map<std::string,int> schema = tblSchema.columnKeys;
-    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>("test_data");
+    Schema schema = get_schema("test_data");
+    std::unique_ptr<FileScan> fs = std::make_unique<FileScan>(schema);
     std::vector<std::string> col_names{ "title", "genres" };
     std::vector<std::string> where;
 };
 
 TEST_F(ProjectionTest, TestNext) {
   fs->scanFile();
-  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), tblSchema );
-  Projection projection{col_names, std::move( select ), tblSchema };
+  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), schema );
+  Projection projection{col_names, std::move( select ), schema };
 
   // Advance to a row where title = "The Fall"
   projection.next();
@@ -99,11 +109,12 @@ TEST_F(ProjectionTest, TestNext) {
   EXPECT_EQ(row, expectation);
 }
 
+// Rewind makes it possible to run JOINs using a naive, inefficient strategy, which
+// I will hopefully swap out at some point.
 TEST_F(ProjectionTest, Rewind) {
   fs->scanFile();
-  TableSchema sch = fs->schema;
-  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), tblSchema );
-  Projection projection{col_names, std::move( select ), tblSchema};
+  std::unique_ptr<Selection> select = std::make_unique<Selection>( where, std::move( fs ), schema );
+  Projection projection{col_names, std::move( select ), schema};
 
   // Advance to a row where title = "The Fall"
   projection.next();
@@ -123,27 +134,31 @@ TEST_F(ProjectionTest, Rewind) {
 }
 
 // Tests for Join
+// Join nodes make it possible to combine data from a pair of tables, call them R and S, into a single query.
+// Join nodes relate the data in one table to the data in another table, through a foreignKey.
+// Where foreignKeys match, rows get returned, according to a schema that combines columns from
+// R and S tables.
 class JoinTest : public ::testing::Test {
   protected:
+    Schema schema = get_schema("test_data");
+    std::unique_ptr<FileScan> tableR = std::make_unique<FileScan>(schema);
+    std::unique_ptr<FileScan> tableS = std::make_unique<FileScan>(schema);
+
     std::vector<std::string> where{"title", "EQUALS","The Fall"};
     std::vector<std::string> col_names{  "movieId", "title", };
     std::vector<std::string> keys{ "movieId", "movieId" };
-    TableSchema tblSchema = schema_loader("test_data");
+    Schema tblSchema = get_schema("test_data");
 };
 
 TEST_F(JoinTest, TestNext) {
-  std::unique_ptr<FileScan> mfs = std::make_unique<FileScan>("test_data");
-  mfs->scanFile();
-  TableSchema mfsSchema = mfs->schema;
-  std::unique_ptr<FileScan> rfs = std::make_unique<FileScan>("test_data");
-  TableSchema rfsSchema = rfs->schema;
-  rfs->scanFile();
-  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( mfs ), tblSchema);
-  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( rfs ), tblSchema);
-  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ), tblSchema);
-  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ), tblSchema);
+  tableR->scanFile();
+  tableS->scanFile();
+  std::unique_ptr<Selection> mselect = std::make_unique<Selection>( where, std::move( tableR ), schema);
+  std::unique_ptr<Selection> rselect = std::make_unique<Selection>( where, std::move( tableS ), schema);
+  std::unique_ptr<Projection> mprojection = std::make_unique<Projection>(col_names, std::move( mselect ), schema);
+  std::unique_ptr<Projection> rprojection = std::make_unique<Projection>(col_names, std::move( rselect ), schema);
 
-  Join join( std::move( mprojection ), std::move( rprojection ), keys, tblSchema, tblSchema);
+  Join join( std::move( mprojection ), std::move( rprojection ), keys, tblSchema, schema);
   std::vector<std::vector<std::string> > result;
 
   int tableSize = 5;
@@ -158,7 +173,65 @@ TEST_F(JoinTest, TestNext) {
   EXPECT_EQ(result, expectation);
 }
 
-// Tests for Tokenizer
+// Tests for Tokenizer and TokenTree
+// The Tokenizer analyzes user input into semantically meaningful units
+// so that the QueryPlanner can understand how to build an appropriate
+// pipeline of query plan nodes.
+
+class TokenTreeTest : public ::testing::Test {
+  protected:
+    TokenTree root;
+    TokenTree select{"SELECT"};
+    TokenTree column1{"movies.title"};
+    TokenTree column2{"ratings.rating"};
+    TokenTree from{"FROM"};
+    TokenTree table{"movies"};
+
+    TokenTree join{"JOIN"};
+    TokenTree jnTable{"ratings"};
+    TokenTree jnKey1{"movieId"};
+    TokenTree on{"ON"};
+    TokenTree jnKey2{"movieId"};
+
+    TokenTree where{"WHERE"};
+    TokenTree whKey1{"title"};
+    TokenTree eq{"EQUALS"};
+    TokenTree whKey2{"Sudden Death (1995)"};
+};
+
+TEST_F(TokenTreeTest, Find){
+  // SELECT
+  from.children.push_back(column1);
+  from.children.push_back(column2);
+  select.children.push_back(from);
+
+  // JOIN
+  on.children.push_back(jnKey1);
+  on.children.push_back(jnKey2);
+  jnTable.children.push_back(on);
+  join.children.push_back(jnTable);
+
+  // WHERE
+  eq.children.push_back(whKey2);
+  whKey2.children.push_back(eq);
+  where.children.push_back(whKey1);
+
+  // ROOT
+  root.children.push_back(select);
+  root.children.push_back(join);
+  root.children.push_back(where);
+
+  // Should find
+  TokenTree result = root.find("FROM");
+  std::string expectedResult = "FROM";
+  EXPECT_EQ(result.token, expectedResult);
+
+  // Should not find
+  result = root.find("KENTUCKY");
+  expectedResult = "NOT FOUND";
+  EXPECT_EQ(result.token, expectedResult);
+}
+
 class TokenizerTest : public ::testing::Test {
   protected:
     Tokenizer t;
@@ -220,6 +293,29 @@ TEST_F(TokenizerWithWhereJoinTest, Tokenize) {
 }
 
 // Tests for QueryPlanner
+// The QueryPlanner reads in a TokenTree, generates an intermediate representation
+// and composes a pipeline of query PlanNodes to return requested data.
+
+class binProjectionKeysTest : public ::testing::Test {
+  protected:
+    QueryPlanner qp;
+};
+
+TEST_F(binProjectionKeysTest, binProjectionKeysWithDots) {
+  std::vector<std::string> selClause{ "movies.title", "ratings.rating" };
+  std::vector<std::vector<std::string> > result = qp.binProjectionKeys(selClause);
+  std::vector<std::vector<std::string> > expectedResult{ { "title" }, { "rating" } };
+
+  EXPECT_EQ(result, expectedResult);
+}
+
+TEST_F(binProjectionKeysTest, binProjectionKeysNoDots) {
+  std::vector<std::string> selClause{ "title", "movieId" };
+  std::vector<std::vector<std::string> > result = qp.binProjectionKeys(selClause);
+  std::vector<std::vector<std::string> > expectedResult{ { "title" , "movieId" } };
+
+  EXPECT_EQ(result, expectedResult);
+}
 
 class QueryPlannerTest : public ::testing::Test {
   protected:
@@ -227,11 +323,11 @@ class QueryPlannerTest : public ::testing::Test {
     std::vector<char*> argv;
 };
 TEST_F(QueryPlannerTest, Run) {
-  std::vector<std::vector<std::string> > expectedResult{ 
+  std::vector<std::vector<std::string> > expectedResult{
     { "movieId", "title", "genres" },
     { "1", "\"A Movie Title, With Commas, In the Title\"", "Adventure|Animation|Children|Comedy|Fantasy" },
     { "2", "The Fall", "Adventure|Fantasy" },
-    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" } 
+    { "3", "Jumanji (1995)", "Adventure|Children|Fantasy" }
   };
 
   for (const auto& arg : arguments)
@@ -252,7 +348,7 @@ class QueryWithProjectionTest : public ::testing::Test {
 };
 
 TEST_F(QueryWithProjectionTest, Run) {
-  std::vector<std::vector<std::string> > expectedResult{ 
+  std::vector<std::vector<std::string> > expectedResult{
     { "title" },
     { "\"A Movie Title, With Commas, In the Title\"" },
     { "The Fall"},
@@ -289,7 +385,9 @@ TEST_F(ComplexQueryTest, Run) {
   EXPECT_EQ(result, expectedResult);
 }
 
-class JoinQueryTest : public ::testing::Test {
+// A self join occurs when the two contributing nodes to the join are read from the
+// same table, i.e. a table is joined on itself.
+class SelfJoinQueryTest : public ::testing::Test {
   protected:
     std::vector<std::string> arguments = {"./mildDBMS", "SELECT * FROM test_data JOIN test_data ON movieId = movieId;"};
     std::vector<char*> argv;
@@ -302,7 +400,7 @@ class JoinQueryTest : public ::testing::Test {
     };
 };
 
-TEST_F(JoinQueryTest, Run) {
+TEST_F(SelfJoinQueryTest, Run) {
   for (const auto& arg : arguments)
       argv.push_back((char*)arg.data());
   argv.push_back(nullptr);
@@ -334,3 +432,26 @@ TEST_F(SelfJoinProjectionWhereQueryTest, Run) {
 
   EXPECT_EQ(result, expectedResult);
 }
+
+class SelfJoinDotProjectionWhereQueryTest : public ::testing::Test {
+  protected:
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT movies.title FROM movies JOIN movies ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"};
+    std::vector<char*> argv;
+    std::vector<std::string> row;
+    std::vector<std::vector<std::string> >expectedResult{
+      { "title", "title" },
+      { "Sudden Death (1995)", "Sudden Death (1995)" }
+    };
+};
+
+TEST_F(SelfJoinDotProjectionWhereQueryTest, Run) {
+  for (const auto& arg : arguments)
+      argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  std::vector<std::vector<std::string> > result = qp.run();
+
+  EXPECT_EQ(result, expectedResult);
+}
+

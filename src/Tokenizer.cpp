@@ -3,18 +3,44 @@
 
 // TODO: Move TokenTree into its own files and define a delete function that
 // TODO: deletes all of a TokenTree's children
+
+TokenTree::TokenTree(std::string tkn) : token(tkn){};
+
 // Method for Testing
 std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v) {
   v->push_back(this->token);
 
-  for(int i = 0; i < this->leaves.size(); i++) {
-    this->leaves[i].depthFirstSearch(v);
+  for(int i = 0; i < this->children.size(); i++) {
+    this->children[i].depthFirstSearch(v);
   }
 
   return *v;
 }
 
-// TODO: You should mark EOQ if you go 200 hundred tokens without a semi-colon
+std::vector<TokenTree> TokenTree::fetchNode(std::string tkn, std::vector<TokenTree> *v){
+  if( (this->token) == tkn) {
+    v->push_back(this->token);
+  }
+
+  for(int i = 0; i < this->children.size(); i++) {
+  ; this->children[i].fetchNode(tkn, v);
+  }
+
+  return *v;
+}
+
+TokenTree TokenTree::find(std::string token) {
+  std::vector<TokenTree> tt;
+  TokenTree notFound("NOT FOUND");
+  fetchNode(token, &tt);
+
+  if(tt.size() > 0){
+    return tt[0];
+  } else {
+    return notFound;
+  }
+};
+
 void Tokenizer::checkForEOQ(){
   std::string stop_char = ";";
 
@@ -80,7 +106,7 @@ std::string Tokenizer::parseSelect() {
   while(curr != "FROM") {
     TokenTree node;
     node.token = curr;
-    sel.leaves.push_back(node);
+    sel.children.push_back(node);
 
     // Advance by one token
      curr = nextToken();
@@ -92,7 +118,7 @@ std::string Tokenizer::parseSelect() {
 
   TokenTree tbl;
   tbl.token = nextToken();
-  frm.leaves.push_back(tbl);
+  frm.children.push_back(tbl);
 
 
   curr = nextToken();
@@ -101,12 +127,12 @@ std::string Tokenizer::parseSelect() {
   while((curr != "WHERE") && (curr != "JOIN") && !endOfQuery) {
     TokenTree node;
     node.token = curr;
-    frm.leaves.push_back(node);
+    frm.children.push_back(node);
 
     // Advance by one token
     nextToken();
   }
-  sel.leaves.push_back(frm);
+  sel.children.push_back(frm);
 
   return curr;
 }
@@ -134,9 +160,9 @@ std::string Tokenizer::parseWhere() {
     checkForEOQ();
     val.token = curr;
 
-    eql.leaves.push_back(val);
-    prd.leaves.push_back(eql);
-    whr.leaves.push_back(prd);
+    eql.children.push_back(val);
+    prd.children.push_back(eql);
+    whr.children.push_back(prd);
 
      curr = nextToken();
   }
@@ -161,11 +187,11 @@ std::string Tokenizer::parseJoin() {
   lId.token = nextToken();
   std::string curr = nextToken();
 
-  on.leaves.push_back(rId);
-  on.leaves.push_back(eq);
-  on.leaves.push_back(lId);
-  tbl.leaves.push_back(on);
-  jn.leaves.push_back(tbl);
+  on.children.push_back(rId);
+  on.children.push_back(eq);
+  on.children.push_back(lId);
+  tbl.children.push_back(on);
+  jn.children.push_back(tbl);
 
   return curr;
 }
@@ -203,12 +229,12 @@ TokenTree Tokenizer::tokenize(std::string str) {
       curr = parseWhere();
   }
 
-  if(sel.leaves.size() > 0)
-    root.leaves.push_back(sel);
-  if(jn.leaves.size() > 0)
-    root.leaves.push_back(jn);
-  if(whr.leaves.size() > 0)
-    root.leaves.push_back(whr);
+  if(sel.children.size() > 0)
+    root.children.push_back(sel);
+  if(jn.children.size() > 0)
+    root.children.push_back(jn);
+  if(whr.children.size() > 0)
+    root.children.push_back(whr);
 
   return root;
 };
