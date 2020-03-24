@@ -133,16 +133,16 @@ void QueryPlanner::detectClauses(){
   where_ = tokenTree_.find("WHERE");
   join_ = tokenTree_.find("JOIN");
 
-  if ( select_.exist() )
+  if ( select_->exist() )
     selPresent_ = true;
 
-  if ( from_.exist() )
+  if ( from_->exist() )
     frmPresent_ = true; // found
 
-  if ( where_.exist() )
+  if ( where_->exist() )
     whrPresent_ = true; // found
 
-  if ( join_.exist() )
+  if ( join_->exist() )
     jnPresent_ = true; // found
 }
 
@@ -156,6 +156,9 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   tokenTree_ = tokenize();
   std::vector<std::string> where;
 
+//  std::cout << "FROM CHILDREN SIZE " << from_->children.size() << std::endl;
+//  std::cout << "FROM exist? " << from_->exist() << std::endl;
+
   std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tokenTree_);
   detectClauses(); // Set flags for clauses detected in queryData_
 
@@ -167,6 +170,7 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   // Build rFileScan Node
+
   std::string tblName = queryData_["FROM"][0];
   Schema schema = get_schema(tblName);
   int frmTableSize = schema.tableSize;

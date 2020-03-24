@@ -21,21 +21,21 @@ std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v
   return *v;
 }
 
-std::vector<TokenTree> TokenTree::fetchNode(std::string tkn, std::vector<TokenTree> *v){
+std::vector<TokenTree*> TokenTree::fetchNode(std::string tkn, std::vector<TokenTree*> *v){
   if( (this->token) == tkn) {
-    v->push_back(this->token);
+    v->push_back(this);
   }
 
   for(int i = 0; i < this->children.size(); i++) {
-  ; this->children[i].fetchNode(tkn, v);
+    this->children[i].fetchNode(tkn, v);
   }
 
   return *v;
 }
 
-TokenTree TokenTree::find(std::string token) {
-  std::vector<TokenTree> tt;
-  TokenTree notFound("NOT FOUND");
+TokenTree* TokenTree::find(std::string token) {
+  std::vector<TokenTree*> tt;
+  TokenTree* notFound = new TokenTree("NOT FOUND");
   fetchNode(token, &tt);
 
   if(tt.size() > 0){
@@ -123,7 +123,6 @@ std::string Tokenizer::parseSelect() {
   TokenTree tbl;
   tbl.token = nextToken();
   frm.children.push_back(tbl);
-
 
   curr = nextToken();
 

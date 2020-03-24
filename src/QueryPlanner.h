@@ -41,10 +41,10 @@ class QueryPlanner{
     TokenTree tokenTree_;
     std::map<std::string, std::vector<std::string> > queryData_;
     void detectClauses();
-    TokenTree select_;
-    TokenTree from_;
-    TokenTree where_;
-    TokenTree join_;
+    TokenTree* select_;
+    TokenTree* from_;
+    TokenTree* where_;
+    TokenTree* join_;
     bool selPresent_ = false;
     bool frmPresent_ = false;
     bool whrPresent_ = false;

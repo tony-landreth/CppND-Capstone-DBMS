@@ -201,8 +201,9 @@ class TokenTreeTest : public ::testing::Test {
 
 TEST_F(TokenTreeTest, Find){
   // SELECT
-  from.children.push_back(column1);
-  from.children.push_back(column2);
+  select.children.push_back(column1);
+  select.children.push_back(column2);
+  from.children.push_back(table);
   select.children.push_back(from);
 
   // JOIN
@@ -222,14 +223,18 @@ TEST_F(TokenTreeTest, Find){
   root.children.push_back(where);
 
   // Should find
-  TokenTree result = root.find("FROM");
+  TokenTree* result = root.find("FROM");
   std::string expectedResult = "FROM";
-  EXPECT_EQ(result.token, expectedResult);
+  EXPECT_EQ(result->token, expectedResult);
+
+  // Should have children
+  int childCount = result->children.size();
+  EXPECT_EQ(childCount, 1);
 
   // Should not find
   result = root.find("KENTUCKY");
   expectedResult = "NOT FOUND";
-  EXPECT_EQ(result.token, expectedResult);
+  EXPECT_EQ(result->token, expectedResult);
 }
 
 class TokenizerTest : public ::testing::Test {
