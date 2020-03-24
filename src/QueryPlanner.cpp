@@ -77,51 +77,52 @@ TokenTree QueryPlanner::tokenize()
 
 // Convert token tree into map to simplify logic when building query
 std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTree root) {
+  std::cout << "BEFORE\n";
   int treeSize = root.children.size();
+  std::vector<std::string> selCols;
+  std::vector<TokenTree> selChildren = select_->children;
 
-  TokenTree firstNode = root.children[0];
+  for(TokenTree t : selChildren){
+    if(t.token != "FROM"){
+      selCols.push_back(t.token);
+    }
+  }
 
-  int firstNodeSize = firstNode.children.size();
-  std::vector<std::string> selCols{ firstNode.children[0].token };
   queryData_.insert({"SELECT", selCols});
 
-  int fromNodeIdx = 1;
-  TokenTree fromNode = firstNode.children[fromNodeIdx];
-
-  if(fromNode.token == "FROM") {
-    std::string tblName = fromNode.children[0].token;
+  if(from_->exist()) {
+    std::string tblName = from_->children[0].token;
     queryData_.insert({"FROM", { tblName }});
   }
 
-  if(root.children.size() > 1){
-    TokenTree secondNode = root.children[1];
-    if(secondNode.token == "WHERE") {
-      std::string v1 = secondNode.children[0].token;
-      std::string eq = secondNode.children[1].token;
-      std::string v2 = secondNode.children[2].token;
-      std::vector<std::string> whrClause{ v1, eq, v2 };
-      queryData_.insert({"WHERE", whrClause});
-    }
-    if(secondNode.token == "JOIN") {
-      std::string tbl = secondNode.children[0].token;
-      std::string on = secondNode.children[1].token;
-      std::string rKey = secondNode.children[1].children[0].token;
-      std::string eq = secondNode.children[3].token;
-      std::string sKey = secondNode.children[1].children[2].token;
-      std::vector<std::string> jnClause{ tbl, rKey, sKey };
-      queryData_.insert({"JOIN", jnClause});
-    }
+  if(where_->exist()) {
+    std::vector<TokenTree> whrChildren = where_->children;
+    TokenTree v1 = whrChildren[0];
+    std::string v1Token = whrChildren[0].token;
+
+    std::vector<TokenTree> v1Children = v1.children;
+    TokenTree eq = v1Children[0];
+    std::string eqToken = eq.token;
+
+    std::vector<TokenTree> eqChildren = eq.children;
+    TokenTree v2 = eqChildren[0];
+    std::string v2Token = v2.token;
+    std::vector<std::string> whrClause{ v1Token, eqToken, v2Token };
+    queryData_.insert({"WHERE", whrClause});
   }
 
-  if(root.children.size() > 2){
-    TokenTree thirdNode = root.children[2];
-    if(thirdNode.token == "WHERE") {
-      std::string v1 = thirdNode.children[0].token;
-      std::string eq = thirdNode.children[1].token;
-      std::string v2 = thirdNode.children[2].token;
-      std::vector<std::string> whrClause{ v1, eq, v2 };
-      queryData_.insert({"WHERE", whrClause});
-    }
+  if(join_->exist()) {
+    std::vector<TokenTree> jnChildren = join_->children;
+    TokenTree tbl = jnChildren[0];
+    std::string tblToken = tbl.token;
+
+    TokenTree* on = join_->find("ON");
+    std::vector<TokenTree> onChildren = on->children;
+
+    std::string rKey = onChildren[0].token;
+    std::string sKey = onChildren[2].token;
+    std::vector<std::string> jnClause{ tblToken, rKey, sKey };
+    queryData_.insert({"JOIN", jnClause});
   }
 
   return queryData_;
@@ -159,8 +160,8 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
 //  std::cout << "FROM CHILDREN SIZE " << from_->children.size() << std::endl;
 //  std::cout << "FROM exist? " << from_->exist() << std::endl;
 
-  std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tokenTree_);
   detectClauses(); // Set flags for clauses detected in queryData_
+  std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tokenTree_);
 
   // Handle commands missing the minimal data to issue a query
   bool badQuery = ( !frmPresent_ || !selPresent_ || (queryData_["FROM"].size() > 1));
@@ -196,7 +197,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     frontEndSelCols.insert( frontEndSelCols.end(), rBackEndSelCols.begin(), rBackEndSelCols.end() );
     frontEndSelCols.insert( frontEndSelCols.end(), sBackEndSelCols.begin(), sBackEndSelCols.end() );
 
-    std::cout << "frontEndSelCols\n";
     for(std::string str : frontEndSelCols){
       std::cout << " " << str << " ";
     }

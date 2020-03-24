@@ -13,6 +13,7 @@
 //  Each table in the database is its own file on disk.
 //  One FileScan node opens one file.
 //
+
 class FileScanTest : public ::testing::Test {
   protected:
     Schema tblSchema = get_schema("test_data");

@@ -167,7 +167,7 @@ std::string Tokenizer::parseWhere() {
     prd.children.push_back(eql);
     whr.children.push_back(prd);
 
-     curr = nextToken();
+    curr = nextToken();
   }
   return curr;
 }
