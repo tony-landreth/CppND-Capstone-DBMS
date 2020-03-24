@@ -133,16 +133,16 @@ void QueryPlanner::detectClauses(){
   TokenTree where = tokenTree_.find("WHERE");
   TokenTree join = tokenTree_.find("JOIN");
 
-  if ( select.token == "SELECT" )
+  if ( select.exist() )
     selPresent_ = true;
 
-  if ( from.token == "FROM" )
+  if ( from.exist() )
     frmPresent_ = true; // found
 
-  if ( where.token == "WHERE" )
+  if ( where.exist() )
     whrPresent_ = true; // found
 
-  if ( join.token == "JOIN" )
+  if ( join.exist() )
     jnPresent_ = true; // found
 }
 

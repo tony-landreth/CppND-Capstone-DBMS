@@ -6,6 +6,10 @@
 
 TokenTree::TokenTree(std::string tkn) : token(tkn){};
 
+bool TokenTree::exist(){
+  return (token != "NOT FOUND");
+}
+
 // Method for Testing
 std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v) {
   v->push_back(this->token);
