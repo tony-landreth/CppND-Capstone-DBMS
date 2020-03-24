@@ -128,16 +128,21 @@ std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTre
 }
 
 void QueryPlanner::detectClauses(){
-  if ( queryData_.find("SELECT") != queryData_.end() )
-    selPresent_ = true; // found
+  TokenTree select = tokenTree_.find("SELECT");
+  TokenTree from = tokenTree_.find("FROM");
+  TokenTree where = tokenTree_.find("WHERE");
+  TokenTree join = tokenTree_.find("JOIN");
 
-  if ( queryData_.find("FROM") != queryData_.end() )
+  if ( select.token == "SELECT" )
+    selPresent_ = true;
+
+  if ( from.token == "FROM" )
     frmPresent_ = true; // found
 
-  if ( queryData_.find("WHERE") != queryData_.end() )
+  if ( where.token == "WHERE" )
     whrPresent_ = true; // found
 
-  if ( queryData_.find("JOIN") != queryData_.end() )
+  if ( join.token == "JOIN" )
     jnPresent_ = true; // found
 }
 
@@ -148,10 +153,10 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::vector<std::string> badQueryMsg{ "You have not submitted a valid query.", "The minimal query has the form SELECT * FROM table_name;" };
   std::vector<std::vector<std::string> > results;
   std::vector<std::string> row;
-  TokenTree tt = tokenize();
+  tokenTree_ = tokenize();
   std::vector<std::string> where;
 
-  std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tt);
+  std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tokenTree_);
   detectClauses(); // Set flags for clauses detected in queryData_
 
   // Handle commands missing the minimal data to issue a query

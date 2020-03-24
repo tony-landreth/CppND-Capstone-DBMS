@@ -38,6 +38,7 @@ class QueryPlanner{
     // Variable declarations
     char** argv_;
     int argc_;
+    TokenTree tokenTree_;
     std::map<std::string, std::vector<std::string> > queryData_;
     void detectClauses();
     bool whrPresent_ = false;
