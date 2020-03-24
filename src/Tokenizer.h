@@ -12,9 +12,15 @@
 class TokenTree
 {
   public:
+    // Method declarations
+    TokenTree(){};
+    TokenTree(std::string token);
+    std::vector<std::string> depthFirstSearch(std::vector<std::string> *v);
+    std::vector<TokenTree> fetchNode(std::string tkn, std::vector<TokenTree> *tt);
+
+    //Variable declarations
     std::vector<TokenTree> children;
     std::string token;
-    std::vector<std::string> depthFirstSearch(std::vector<std::string> *v);
 };
 
 /*
@@ -27,7 +33,6 @@ class Tokenizer
     // Method declarations
     TokenTree tokenize(const std::string str);
 
-    //Variable declarations
   private:
     // Method declarations
     std::string nextToken();                // advances tkn to the next token in tkns and returns tkn

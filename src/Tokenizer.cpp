@@ -3,12 +3,27 @@
 
 // TODO: Move TokenTree into its own files and define a delete function that
 // TODO: deletes all of a TokenTree's children
+
+TokenTree::TokenTree(std::string tkn) : token(tkn){};
+
 // Method for Testing
 std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v) {
   v->push_back(this->token);
 
   for(int i = 0; i < this->children.size(); i++) {
     this->children[i].depthFirstSearch(v);
+  }
+
+  return *v;
+}
+
+std::vector<TokenTree> TokenTree::fetchNode(std::string tkn, std::vector<TokenTree> *v){
+  if( (this->token) == tkn) {
+    v->push_back(this->token);
+  }
+
+  for(int i = 0; i < this->children.size(); i++) {
+  ; this->children[i].fetchNode(tkn, v);
   }
 
   return *v;

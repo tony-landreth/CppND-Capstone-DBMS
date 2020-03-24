@@ -173,10 +173,63 @@ TEST_F(JoinTest, TestNext) {
   EXPECT_EQ(result, expectation);
 }
 
-// Tests for Tokenizer
+// Tests for Tokenizer and TokenTree
 // The Tokenizer analyzes user input into semantically meaningful units
 // so that the QueryPlanner can understand how to build an appropriate
 // pipeline of query plan nodes.
+
+class TokenTreeTest : public ::testing::Test {
+  protected:
+    TokenTree root;
+    TokenTree select{"SELECT"};
+    TokenTree column1{"movies.title"};
+    TokenTree column2{"ratings.rating"};
+    TokenTree from{"FROM"};
+    TokenTree table{"movies"};
+
+    TokenTree join{"JOIN"};
+    TokenTree jnTable{"ratings"};
+    TokenTree jnKey1{"movieId"};
+    TokenTree on{"ON"};
+    TokenTree jnKey2{"movieId"};
+
+    TokenTree where{"WHERE"};
+    TokenTree whKey1{"title"};
+    TokenTree eq{"EQUALS"};
+    TokenTree whKey2{"Sudden Death (1995)"};
+};
+
+TEST_F(TokenTreeTest, Find){
+  // SELECT
+  from.children.push_back(column1);
+  from.children.push_back(column2);
+  select.children.push_back(from);
+
+  // JOIN
+  on.children.push_back(jnKey1);
+  on.children.push_back(jnKey2);
+  jnTable.children.push_back(on);
+  join.children.push_back(jnTable);
+
+  // WHERE
+  eq.children.push_back(whKey2);
+  whKey2.children.push_back(eq);
+  where.children.push_back(whKey1);
+
+  // ROOT
+  root.children.push_back(select);
+  root.children.push_back(join);
+  root.children.push_back(where);
+
+  std::string expectedResult = "FROM";
+//  std::vector<TokenTree> tt;
+//  std::vector<TokenTree> *fetch = root.fetchNode("FROM", tt);
+//  std::vector<TokenTree> rFetch = *fetch;
+//  TokenTree result = rFetch[0];
+
+//  EXPECT_EQ(result.token, expectedResult);
+}
+
 class TokenizerTest : public ::testing::Test {
   protected:
     Tokenizer t;
