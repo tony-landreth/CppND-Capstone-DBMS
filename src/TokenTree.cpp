@@ -75,11 +75,8 @@ TokenTree::TokenTree(TokenTree &&source){
   children = source.children;
 };
 
-/*
 // move assignment operator
 TokenTree &TokenTree::operator=(TokenTree &&source){
-  std::cout << "MOVING (assign) instance " << &source << " to instance " << this << std::endl;
-
   if (this == &source){
     return *this;
   }
@@ -90,4 +87,4 @@ TokenTree &TokenTree::operator=(TokenTree &&source){
 
   return *this;
 };      
-*/
+
