@@ -19,7 +19,7 @@ class TokenTree
     ~TokenTree();                                  // destructor
     TokenTree(const TokenTree &source);            // copy constructor
     TokenTree &operator=(const TokenTree &source); // copy assignment operator
-    //TokenTree(TokenTree &&source);                 // move constructor
+    TokenTree(TokenTree &&source);                 // move constructor
     //TokenTree &operator=(TokenTree &&source);      // move assignment operator
 
     std::vector<std::string> depthFirstSearch(std::vector<std::string> *v);

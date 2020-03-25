@@ -69,9 +69,13 @@ TokenTree &TokenTree::operator=(const TokenTree &source){
   return *this;
 };
 
-/*
-TokenTree::TokenTree(TokenTree &&source){};                 // move constructor
+// move constructor
+TokenTree::TokenTree(TokenTree &&source){
+  token = source.token;
+  children = source.children;
+};
 
+/*
 // move assignment operator
 TokenTree &TokenTree::operator=(TokenTree &&source){
   std::cout << "MOVING (assign) instance " << &source << " to instance " << this << std::endl;
