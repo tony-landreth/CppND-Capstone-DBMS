@@ -44,3 +44,46 @@ TokenTree* TokenTree::find(std::string token) {
   }
 };
 
+// destructor
+TokenTree::~TokenTree(){
+  children.clear();
+};
+
+/*
+// copy constructor
+TokenTree::TokenTree(const TokenTree &source){
+
+  std::cout << "COPYING content of instance " << &source << " to instance " << this << std::endl;
+};
+
+// copy assignment operator
+TokenTree &TokenTree::operator=(const TokenTree &source){
+  std::cout << "ASSIGNING content of instance " << &source << " to instance " << this << std::endl;
+  if (this == &source){
+    return *this;
+  }
+
+  token = source.token;
+  children.clear();
+  children = source.children;
+
+  return *this;
+};
+
+TokenTree::TokenTree(TokenTree &&source){};                 // move constructor
+
+// move assignment operator
+TokenTree &TokenTree::operator=(TokenTree &&source){
+  std::cout << "MOVING (assign) instance " << &source << " to instance " << this << std::endl;
+
+  if (this == &source){
+    return *this;
+  }
+
+  token = source.token;
+  children.clear();
+  children = source.children;
+
+  return *this;
+};      
+*/
