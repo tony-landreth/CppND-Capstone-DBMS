@@ -49,13 +49,15 @@ TokenTree::~TokenTree(){
   children.clear();
 };
 
-/*
 // copy constructor
 TokenTree::TokenTree(const TokenTree &source){
+  token = source.token;
+  children.clear();
+  children = source.children;
 
-  std::cout << "COPYING content of instance " << &source << " to instance " << this << std::endl;
 };
 
+/*
 // copy assignment operator
 TokenTree &TokenTree::operator=(const TokenTree &source){
   std::cout << "ASSIGNING content of instance " << &source << " to instance " << this << std::endl;

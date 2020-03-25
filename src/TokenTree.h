@@ -17,7 +17,7 @@ class TokenTree
     TokenTree(){};                                 // constructor
     TokenTree(std::string token);                  // constructor
     ~TokenTree();                                  // destructor
-    //TokenTree(const TokenTree &source);            // copy constructor
+    TokenTree(const TokenTree &source);            // copy constructor
     //TokenTree &operator=(const TokenTree &source); // copy assignment operator
     //TokenTree(TokenTree &&source);                 // move constructor
     //TokenTree &operator=(TokenTree &&source);      // move assignment operator
