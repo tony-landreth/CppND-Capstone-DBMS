@@ -6,6 +6,8 @@
 #include "../src/Join.h"
 #include "../src/QueryPlanner.h"
 #include "../src/schema.h"
+#include "../src/TokenTree.h"
+#include "../src/Tokenizer.h"
 
 // Tests for FileScanTest
 //

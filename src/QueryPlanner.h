@@ -12,6 +12,7 @@
 #include "Selection.h"
 #include "Projection.h"
 #include "Join.h"
+#include "TokenTree.h"
 #include "Tokenizer.h"
 #include "utilities.h"
 

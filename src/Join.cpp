@@ -44,7 +44,6 @@ std::vector<std::string> Join::next() {
     // Allowing foreign keys to have the same name
     std::vector<int> keyMap(joinedRow.size(), 0);
 
-    //TODO: This is not working right: it's choosing the wrong foreign keys
     for(std::string k : keys){
       int kmIdx = 0;
 
