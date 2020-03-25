@@ -2,7 +2,9 @@
 
 This is a Capstone project for the [Udacity C++ Nanodegree Program](https://www.udacity.com/course/c-plus-plus-nanodegree--nd213).
 
-The project implements a database management system based on specs from Oz Nova's course in databases at the Bradfield School of Computer Science in San Franisco, and Joe Hellerstein’s databases course at UC Berkeley.
+The project implements a database management system very loosely based on Joe Hellerstein’s databases course at UC Berkeley.
+In fact, don't blame Hellerstein for any of this.
+
 Movie data from GroupLens Research is used to demonstrate the system's functionality. (https://grouplens.org/datasets/movielens/)
 
 ## Dependencies for Running Locally
@@ -22,7 +24,13 @@ Movie data from GroupLens Research is used to demonstrate the system's functiona
 1. Clone this repo, including the test submodule, like this: git clone --recurse-submodules https://github.com/tony-landreth/CppND-Capstone-DBMS.git
 2. Make a build directory in the top level directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
-4. Run it: `./mildDBMS`.
+
+## Running It
+This is a read-only DBMS with very limited capabilities. The following lines will run:
+1. `./mildDBMS "SELECT * FROM movies;"`  
+2. `./mildDBMS "SELECT movies.title, ratings.rating FROM movies JOIN ratings ON movieId = movieId;"`  
+3. `./mildDBMS "SELECT movies.title, ratings.rating FROM movies JOIN ratings ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"`  
+4. `./mildDBMS "SELECT movies.title FROM movies JOIN movies ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"`  
 
 ## Testing
 
