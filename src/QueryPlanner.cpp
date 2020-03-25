@@ -192,10 +192,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     frontEndSelCols.insert( frontEndSelCols.end(), rBackEndSelCols.begin(), rBackEndSelCols.end() );
     frontEndSelCols.insert( frontEndSelCols.end(), sBackEndSelCols.begin(), sBackEndSelCols.end() );
 
-    for(std::string str : frontEndSelCols){
-      std::cout << " " << str << " ";
-    }
-    std::cout << "\n";
   } else{
     rBackEndSelCols = projectionBins[0];
     sBackEndSelCols = projectionBins[0];
@@ -209,24 +205,23 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::unique_ptr<Projection> prjR;
   Schema sTblSchema;
 
-  if(jnPresent_ ){
+  if(jnPresent_){
     // Add JOIN keys to projection node
     std::vector<std::string> jnParams = queryData_["JOIN"];
     std::string sTblName = jnParams[0];
     sTblSchema = get_schema(sTblName);
-    std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
+    std::string rJnKey = jnParams[1];
+    std::string sJnKey = jnParams[2];
 
-    for(std::string k : jnKeys){
-      if(std::find(rBackEndSelCols.begin(), rBackEndSelCols.end(), k) == rBackEndSelCols.end()){
-        rBackEndSelCols.push_back(k);
-      }
-    } 
+    // If the JOIN keys aren't already in the Projection, add them
+    if(std::find(rBackEndSelCols.begin(), rBackEndSelCols.end(), rJnKey) == rBackEndSelCols.end()){
+      rBackEndSelCols.push_back(rJnKey);
+    }
 
-    for(std::string k : jnKeys){
-      if(std::find(sBackEndSelCols.begin(), sBackEndSelCols.end(), k) == sBackEndSelCols.end()){
-        sBackEndSelCols.push_back(k);
-      }
-    } 
+    // If the JOIN keys aren't already in the Projection, add them
+    if(std::find(sBackEndSelCols.begin(), sBackEndSelCols.end(), rJnKey) == sBackEndSelCols.end()){
+      sBackEndSelCols.push_back(sJnKey);
+    }
 
     prjR = std::make_unique<Projection>(rBackEndSelCols, std::move( sel ), schema);
   } else {
@@ -245,11 +240,11 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     sFs->scanFile();
 
     // Build sSelection Node
-    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFs), schema);
+    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFs), sTblSchema);
 
     // Build sProjection
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(sBackEndSelCols, std::move( sSel ), schema);
-    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, schema);
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(sBackEndSelCols, std::move( sSel ), sTblSchema);
+    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, sTblSchema);
 
     // Get the Join node's representation of the data it will return
     Schema jnSchema = jn->getSchema();

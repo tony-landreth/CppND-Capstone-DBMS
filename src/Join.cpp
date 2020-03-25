@@ -21,64 +21,75 @@ std::vector<std::string> Join::next() {
 
   // Get the next row from each node
   std::vector<std::string> r_row = r_->next();
+  std::vector<std::string> s_row = s_->next();
 
   // Rewind the S relation so that a full table scan is possible
-  std::vector<std::string> s_row = s_->next();
   s_->rewind();
 
-  // Use these variables to determine when the foreign keys match between two tables
+  // Use these variables to determine when the foreign keys map to matching values between two tables
   std::string r_col;
   std::string s_col;
 
   // If this is the first call to next(), return title row
   // and construct a schema based on the incoming nodes
   if(rowIdx == 0) {
-    rowIdx++; // Log that you've encountered the header rows for R and S
+    // Concatenate the rows
+    std::vector<std::string> joinedRow;
+    std::copy(r_row.begin(), r_row.end(), std::back_inserter(joinedRow));
+    std::copy(s_row.begin(), s_row.end(), std::back_inserter(joinedRow));
 
-    // Form the header rows from R and S
-    std::vector<std::string> result_row;
-    std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));
-    std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
+    rowIdx++; // Log that you've encountered the header rows for R and S
 
     // Build the column index for foreign keys
     // Allowing foreign keys to have the same name
-    std::vector<int> keyMap(result_row.size(), 0);
-    for(int i = 0; i < keys.size(); i++){
-      for(int j = 0; j < result_row.size(); j++){
-        if(( keyMap[j] == 0 ) && ( keys[i] == result_row[j] )){
-          foreignKeys_.push_back(i);
-          keyMap[j] = 1;
+    std::vector<int> keyMap(joinedRow.size(), 0);
+
+    //TODO: This is not working right: it's choosing the wrong foreign keys
+    for(std::string k : keys){
+      int kmIdx = 0;
+
+      for(std::string c : joinedRow) {
+
+        if((k == c) && (keyMap[kmIdx] == 0)){
+          keyMap[kmIdx] = 1;
+          foreignKeys_.push_back(kmIdx);
         }
+        kmIdx++;
       }
     }
 
-    return result_row;
+    requiredRowSize_ = joinedRow.size();
+    return joinedRow;
   }
 
   int r_colID = foreignKeys_[0];
   int s_colID = foreignKeys_[1];
 
-  if(r_row.size() > 0) {
-    r_col = r_row[r_colID];
+
+  // If r is empty, return early
+  if(r_row.size() == 0) {
+    return result;
   }
 
-  if(r_col.size() > 0) {
-    for(int i = 0; i < sTableSize_; i++) {
-      if(s_row.size() > 0){
-        s_col = s_row[s_colID];
+  // When R is non-empty, search for foreignKey match in S
+  for(int i = 0; i < sTableSize_; i++) {
+    // Concatenate the rows
+    std::vector<std::string> joinedRow;
+    std::copy(r_row.begin(), r_row.end(), std::back_inserter(joinedRow));
+    std::copy(s_row.begin(), s_row.end(), std::back_inserter(joinedRow));
 
-        if(r_col == s_col) {
-          schema_.tableSize++;
-          std::vector<std::string> result_row;
-          std::copy(s_row.begin(), s_row.end(), std::back_inserter(result_row));
-          std::copy(r_row.begin(), r_row.end(), std::back_inserter(result_row));
+    if(joinedRow.size() == requiredRowSize_){
+      r_col = joinedRow[r_colID];
+      s_col = joinedRow[s_colID];
 
-          return result_row;
-        }
+      if(r_col == s_col) {
+        schema_.tableSize++;
+        return joinedRow;
+      } else {
+        s_row = s_->next();
       }
-      s_row = s_->next();
-    } 
-  } 
+    }
+  }
 
   return result;
 }

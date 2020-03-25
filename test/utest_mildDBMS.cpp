@@ -461,3 +461,25 @@ TEST_F(SelfJoinDotProjectionWhereQueryTest, Run) {
   EXPECT_EQ(result, expectedResult);
 }
 
+class JoinDotProjectionQueryTest : public ::testing::Test {
+  protected:
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT movies.title, ratings.rating FROM movies JOIN ratings ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"};
+    std::vector<char*> argv;
+    std::vector<std::string> row;
+    std::vector<std::vector<std::string> >expectedResult{
+      { "title", "rating" },
+      { "Sudden Death (1995)", "3" }
+    };
+};
+
+TEST_F(JoinDotProjectionQueryTest, Run) {
+  for (const auto& arg : arguments)
+      argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  std::vector<std::vector<std::string> > result = qp.run();
+
+  EXPECT_EQ(result, expectedResult);
+}
+

@@ -37,6 +37,7 @@ class Join : public PlanNode
     int rowIdx = 0;
     Schema r_schema_;
     Schema s_schema_;
+    int requiredRowSize_;
 };
 
 #endif

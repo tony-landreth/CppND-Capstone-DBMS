@@ -104,7 +104,7 @@ std::string Tokenizer::nextToken() {
 }
 
 std::string Tokenizer::parseSelect() {
-  std::string curr = nextToken();
+  std::string curr = removeChars(nextToken(), ",");
 
   // Add all tokens until FROM is reached
   while(curr != "FROM") {
@@ -113,7 +113,7 @@ std::string Tokenizer::parseSelect() {
     sel.children.push_back(node);
 
     // Advance by one token
-     curr = nextToken();
+    curr = removeChars(nextToken(), ",");
   }
 
   // Capture FROM token

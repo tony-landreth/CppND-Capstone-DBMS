@@ -23,7 +23,7 @@ Schema get_schema(std::string tableName){
         { "rating", 2 },
         { "timestamp", 3}
       };
-      tableSize = 41702;
+      tableSize = 200;
   } else if(tableName == "test_data") {
       colKeys = {
         { "movieId", 0 },

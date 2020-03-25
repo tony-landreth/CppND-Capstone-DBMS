@@ -3,6 +3,7 @@
 
 #include<vector>
 #include<sstream> 
+#include "utilities.h"
 
 /*
    TokenTree stores user input into meaningful units for building
