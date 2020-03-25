@@ -6,6 +6,8 @@
 #include "../src/Join.h"
 #include "../src/QueryPlanner.h"
 #include "../src/schema.h"
+#include "../src/TokenTree.h"
+#include "../src/Tokenizer.h"
 
 // Tests for FileScanTest
 //
@@ -13,6 +15,7 @@
 //  Each table in the database is its own file on disk.
 //  One FileScan node opens one file.
 //
+
 class FileScanTest : public ::testing::Test {
   protected:
     Schema tblSchema = get_schema("test_data");
@@ -201,8 +204,9 @@ class TokenTreeTest : public ::testing::Test {
 
 TEST_F(TokenTreeTest, Find){
   // SELECT
-  from.children.push_back(column1);
-  from.children.push_back(column2);
+  select.children.push_back(column1);
+  select.children.push_back(column2);
+  from.children.push_back(table);
   select.children.push_back(from);
 
   // JOIN
@@ -222,14 +226,18 @@ TEST_F(TokenTreeTest, Find){
   root.children.push_back(where);
 
   // Should find
-  TokenTree result = root.find("FROM");
+  TokenTree* result = root.find("FROM");
   std::string expectedResult = "FROM";
-  EXPECT_EQ(result.token, expectedResult);
+  EXPECT_EQ(result->token, expectedResult);
+
+  // Should have children
+  int childCount = result->children.size();
+  EXPECT_EQ(childCount, 1);
 
   // Should not find
   result = root.find("KENTUCKY");
   expectedResult = "NOT FOUND";
-  EXPECT_EQ(result.token, expectedResult);
+  EXPECT_EQ(result->token, expectedResult);
 }
 
 class TokenizerTest : public ::testing::Test {
@@ -445,6 +453,28 @@ class SelfJoinDotProjectionWhereQueryTest : public ::testing::Test {
 };
 
 TEST_F(SelfJoinDotProjectionWhereQueryTest, Run) {
+  for (const auto& arg : arguments)
+      argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  QueryPlanner qp(argv.size() - 1, argv.data());
+  std::vector<std::vector<std::string> > result = qp.run();
+
+  EXPECT_EQ(result, expectedResult);
+}
+
+class JoinDotProjectionQueryTest : public ::testing::Test {
+  protected:
+    std::vector<std::string> arguments = {"./mildDBMS", "SELECT movies.title, ratings.rating FROM movies JOIN ratings ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"};
+    std::vector<char*> argv;
+    std::vector<std::string> row;
+    std::vector<std::vector<std::string> >expectedResult{
+      { "title", "rating" },
+      { "Sudden Death (1995)", "3" }
+    };
+};
+
+TEST_F(JoinDotProjectionQueryTest, Run) {
   for (const auto& arg : arguments)
       argv.push_back((char*)arg.data());
   argv.push_back(nullptr);

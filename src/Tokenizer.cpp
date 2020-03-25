@@ -1,45 +1,4 @@
 #include "Tokenizer.h"
-#include<iostream>
-
-// TODO: Move TokenTree into its own files and define a delete function that
-// TODO: deletes all of a TokenTree's children
-
-TokenTree::TokenTree(std::string tkn) : token(tkn){};
-
-// Method for Testing
-std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v) {
-  v->push_back(this->token);
-
-  for(int i = 0; i < this->children.size(); i++) {
-    this->children[i].depthFirstSearch(v);
-  }
-
-  return *v;
-}
-
-std::vector<TokenTree> TokenTree::fetchNode(std::string tkn, std::vector<TokenTree> *v){
-  if( (this->token) == tkn) {
-    v->push_back(this->token);
-  }
-
-  for(int i = 0; i < this->children.size(); i++) {
-  ; this->children[i].fetchNode(tkn, v);
-  }
-
-  return *v;
-}
-
-TokenTree TokenTree::find(std::string token) {
-  std::vector<TokenTree> tt;
-  TokenTree notFound("NOT FOUND");
-  fetchNode(token, &tt);
-
-  if(tt.size() > 0){
-    return tt[0];
-  } else {
-    return notFound;
-  }
-};
 
 void Tokenizer::checkForEOQ(){
   std::string stop_char = ";";
@@ -100,7 +59,7 @@ std::string Tokenizer::nextToken() {
 }
 
 std::string Tokenizer::parseSelect() {
-  std::string curr = nextToken();
+  std::string curr = removeChars(nextToken(), ",");
 
   // Add all tokens until FROM is reached
   while(curr != "FROM") {
@@ -109,7 +68,7 @@ std::string Tokenizer::parseSelect() {
     sel.children.push_back(node);
 
     // Advance by one token
-     curr = nextToken();
+    curr = removeChars(nextToken(), ",");
   }
 
   // Capture FROM token
@@ -119,7 +78,6 @@ std::string Tokenizer::parseSelect() {
   TokenTree tbl;
   tbl.token = nextToken();
   frm.children.push_back(tbl);
-
 
   curr = nextToken();
 
@@ -164,7 +122,7 @@ std::string Tokenizer::parseWhere() {
     prd.children.push_back(eql);
     whr.children.push_back(prd);
 
-     curr = nextToken();
+    curr = nextToken();
   }
   return curr;
 }

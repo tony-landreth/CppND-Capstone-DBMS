@@ -1,6 +1,6 @@
 #include "utilities.h"
 
-// This a cribbed function from Fluent C++
+// This is a cribbed function from Fluent C++
 // See: https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/
 std::vector<std::string> split(const std::string& s, char delimiter)
 {
@@ -13,4 +13,13 @@ std::vector<std::string> split(const std::string& s, char delimiter)
       tokens.push_back(token);
    }
    return tokens;
+}
+
+
+std::string removeChars(std::string str, std::string chars){
+
+  for (char c: chars) {
+    str.erase(std::remove(str.begin(), str.end(), c), str.end());
+  }
+  return str;
 }

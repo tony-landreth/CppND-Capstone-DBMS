@@ -3,30 +3,8 @@
 
 #include<vector>
 #include<sstream> 
-
-/*
-   TokenTree stores user input into meaningful units for building
-   a query.
-*/
-
-class TokenTree
-{
-  public:
-    // Method declarations
-    TokenTree(){};
-    TokenTree(std::string token);
-    std::vector<std::string> depthFirstSearch(std::vector<std::string> *v);
-    TokenTree find(std::string token);
-
-    //Variable declarations
-    std::vector<TokenTree> children;
-    std::string token;
-
-  private:
-    // Method declarations
-    std::vector<TokenTree> fetchNode(std::string tkn, std::vector<TokenTree> *tt);
-    
-};
+#include "TokenTree.h"
+#include "utilities.h"
 
 /*
    Tokenizer parses user input into meaningful tokens.

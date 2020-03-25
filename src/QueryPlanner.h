@@ -12,6 +12,7 @@
 #include "Selection.h"
 #include "Projection.h"
 #include "Join.h"
+#include "TokenTree.h"
 #include "Tokenizer.h"
 #include "utilities.h"
 
@@ -38,12 +39,17 @@ class QueryPlanner{
     // Variable declarations
     char** argv_;
     int argc_;
+    TokenTree tokenTree_;
     std::map<std::string, std::vector<std::string> > queryData_;
     void detectClauses();
-    bool whrPresent_ = false;
+    TokenTree* select_;
+    TokenTree* from_;
+    TokenTree* where_;
+    TokenTree* join_;
     bool selPresent_ = false;
-    bool jnPresent_ = false;
     bool frmPresent_ = false;
+    bool whrPresent_ = false;
+    bool jnPresent_ = false;
 };
 
 #endif

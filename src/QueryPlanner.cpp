@@ -78,66 +78,71 @@ TokenTree QueryPlanner::tokenize()
 // Convert token tree into map to simplify logic when building query
 std::map<std::string, std::vector<std::string> > QueryPlanner::mapQuery(TokenTree root) {
   int treeSize = root.children.size();
+  std::vector<std::string> selCols;
+  std::vector<TokenTree> selChildren = select_->children;
 
-  TokenTree firstNode = root.children[0];
+  for(TokenTree t : selChildren){
+    if(t.token != "FROM"){
+      selCols.push_back(t.token);
+    }
+  }
 
-  int firstNodeSize = firstNode.children.size();
-  std::vector<std::string> selCols{ firstNode.children[0].token };
   queryData_.insert({"SELECT", selCols});
 
-  int fromNodeIdx = 1;
-  TokenTree fromNode = firstNode.children[fromNodeIdx];
-
-  if(fromNode.token == "FROM") {
-    std::string tblName = fromNode.children[0].token;
+  if(from_->exist()) {
+    std::string tblName = from_->children[0].token;
     queryData_.insert({"FROM", { tblName }});
   }
 
-  if(root.children.size() > 1){
-    TokenTree secondNode = root.children[1];
-    if(secondNode.token == "WHERE") {
-      std::string v1 = secondNode.children[0].token;
-      std::string eq = secondNode.children[1].token;
-      std::string v2 = secondNode.children[2].token;
-      std::vector<std::string> whrClause{ v1, eq, v2 };
-      queryData_.insert({"WHERE", whrClause});
-    }
-    if(secondNode.token == "JOIN") {
-      std::string tbl = secondNode.children[0].token;
-      std::string on = secondNode.children[1].token;
-      std::string rKey = secondNode.children[1].children[0].token;
-      std::string eq = secondNode.children[3].token;
-      std::string sKey = secondNode.children[1].children[2].token;
-      std::vector<std::string> jnClause{ tbl, rKey, sKey };
-      queryData_.insert({"JOIN", jnClause});
-    }
+  if(where_->exist()) {
+    std::vector<TokenTree> whrChildren = where_->children;
+    TokenTree v1 = whrChildren[0];
+    std::string v1Token = whrChildren[0].token;
+
+    std::vector<TokenTree> v1Children = v1.children;
+    TokenTree eq = v1Children[0];
+    std::string eqToken = eq.token;
+
+    std::vector<TokenTree> eqChildren = eq.children;
+    TokenTree v2 = eqChildren[0];
+    std::string v2Token = v2.token;
+    std::vector<std::string> whrClause{ v1Token, eqToken, v2Token };
+    queryData_.insert({"WHERE", whrClause});
   }
 
-  if(root.children.size() > 2){
-    TokenTree thirdNode = root.children[2];
-    if(thirdNode.token == "WHERE") {
-      std::string v1 = thirdNode.children[0].token;
-      std::string eq = thirdNode.children[1].token;
-      std::string v2 = thirdNode.children[2].token;
-      std::vector<std::string> whrClause{ v1, eq, v2 };
-      queryData_.insert({"WHERE", whrClause});
-    }
+  if(join_->exist()) {
+    std::vector<TokenTree> jnChildren = join_->children;
+    TokenTree tbl = jnChildren[0];
+    std::string tblToken = tbl.token;
+
+    TokenTree* on = join_->find("ON");
+    std::vector<TokenTree> onChildren = on->children;
+
+    std::string rKey = onChildren[0].token;
+    std::string sKey = onChildren[2].token;
+    std::vector<std::string> jnClause{ tblToken, rKey, sKey };
+    queryData_.insert({"JOIN", jnClause});
   }
 
   return queryData_;
 }
 
 void QueryPlanner::detectClauses(){
-  if ( queryData_.find("SELECT") != queryData_.end() )
-    selPresent_ = true; // found
+  select_ = tokenTree_.find("SELECT");
+  from_ = tokenTree_.find("FROM");
+  where_ = tokenTree_.find("WHERE");
+  join_ = tokenTree_.find("JOIN");
 
-  if ( queryData_.find("FROM") != queryData_.end() )
+  if ( select_->exist() )
+    selPresent_ = true;
+
+  if ( from_->exist() )
     frmPresent_ = true; // found
 
-  if ( queryData_.find("WHERE") != queryData_.end() )
+  if ( where_->exist() )
     whrPresent_ = true; // found
 
-  if ( queryData_.find("JOIN") != queryData_.end() )
+  if ( join_->exist() )
     jnPresent_ = true; // found
 }
 
@@ -148,11 +153,11 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   std::vector<std::string> badQueryMsg{ "You have not submitted a valid query.", "The minimal query has the form SELECT * FROM table_name;" };
   std::vector<std::vector<std::string> > results;
   std::vector<std::string> row;
-  TokenTree tt = tokenize();
+  tokenTree_ = tokenize();
   std::vector<std::string> where;
 
-  std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tt);
   detectClauses(); // Set flags for clauses detected in queryData_
+  std::map<std::string, std::vector<std::string> > queryData_ = mapQuery(tokenTree_);
 
   // Handle commands missing the minimal data to issue a query
   bool badQuery = ( !frmPresent_ || !selPresent_ || (queryData_["FROM"].size() > 1));
@@ -162,11 +167,11 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   // Build rFileScan Node
-  std::string tblName = queryData_["FROM"][0];
+  std::string tblName = from_->children[0].token;
   Schema schema = get_schema(tblName);
   int frmTableSize = schema.tableSize;
-  std::unique_ptr<FileScan> frmFs = std::make_unique<FileScan>(schema);
-  frmFs->scanFile();
+  std::unique_ptr<FileScan> rFs = std::make_unique<FileScan>(schema);
+  rFs->scanFile();
 
   // Build SELECTION Node
   where = queryData_["WHERE"];
@@ -187,11 +192,6 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
     frontEndSelCols.insert( frontEndSelCols.end(), rBackEndSelCols.begin(), rBackEndSelCols.end() );
     frontEndSelCols.insert( frontEndSelCols.end(), sBackEndSelCols.begin(), sBackEndSelCols.end() );
 
-    std::cout << "frontEndSelCols\n";
-    for(std::string str : frontEndSelCols){
-      std::cout << " " << str << " ";
-    }
-    std::cout << "\n";
   } else{
     rBackEndSelCols = projectionBins[0];
     sBackEndSelCols = projectionBins[0];
@@ -199,30 +199,29 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   }
 
   // TODO: move this after jn check and join frontEndSelCols[0] and [1] if there is a 1
-  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(frmFs), schema);
+  std::unique_ptr<Selection> sel = std::make_unique<Selection>(where, std::move(rFs), schema);
 
   // Build Projection Node
   std::unique_ptr<Projection> prjR;
   Schema sTblSchema;
 
-  if(jnPresent_ ){
+  if(jnPresent_){
     // Add JOIN keys to projection node
     std::vector<std::string> jnParams = queryData_["JOIN"];
     std::string sTblName = jnParams[0];
     sTblSchema = get_schema(sTblName);
-    std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
+    std::string rJnKey = jnParams[1];
+    std::string sJnKey = jnParams[2];
 
-    for(std::string k : jnKeys){
-      if(std::find(rBackEndSelCols.begin(), rBackEndSelCols.end(), k) == rBackEndSelCols.end()){
-        rBackEndSelCols.push_back(k);
-      }
-    } 
+    // If the JOIN keys aren't already in the Projection, add them
+    if(std::find(rBackEndSelCols.begin(), rBackEndSelCols.end(), rJnKey) == rBackEndSelCols.end()){
+      rBackEndSelCols.push_back(rJnKey);
+    }
 
-    for(std::string k : jnKeys){
-      if(std::find(sBackEndSelCols.begin(), sBackEndSelCols.end(), k) == sBackEndSelCols.end()){
-        sBackEndSelCols.push_back(k);
-      }
-    } 
+    // If the JOIN keys aren't already in the Projection, add them
+    if(std::find(sBackEndSelCols.begin(), sBackEndSelCols.end(), rJnKey) == sBackEndSelCols.end()){
+      sBackEndSelCols.push_back(sJnKey);
+    }
 
     prjR = std::make_unique<Projection>(rBackEndSelCols, std::move( sel ), schema);
   } else {
@@ -232,19 +231,20 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // Build Join Node
   if(jnPresent_ ){
     std::vector<std::string> jnParams = queryData_["JOIN"];
+
     // Build sFileScan Node
     std::string sTblName = jnParams[0];
     sTblSchema = get_schema(sTblName);
     std::vector<std::string> jnKeys{ jnParams[1], jnParams[2] };
-    std::unique_ptr<FileScan> sFrmFs = std::make_unique<FileScan>(sTblSchema);
-    sFrmFs->scanFile();
+    std::unique_ptr<FileScan> sFs = std::make_unique<FileScan>(sTblSchema);
+    sFs->scanFile();
 
     // Build sSelection Node
-    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFrmFs), schema);
+    std::unique_ptr<Selection> sSel = std::make_unique<Selection>(where, std::move(sFs), sTblSchema);
 
     // Build sProjection
-    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(sBackEndSelCols, std::move( sSel ), schema);
-    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, schema);
+    std::unique_ptr<Projection> prjS = std::make_unique<Projection>(sBackEndSelCols, std::move( sSel ), sTblSchema);
+    std::unique_ptr<Join> jn = std::make_unique<Join>(std::move(prjR), std::move(prjS), jnKeys, schema, sTblSchema);
 
     // Get the Join node's representation of the data it will return
     Schema jnSchema = jn->getSchema();
