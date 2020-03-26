@@ -7,6 +7,14 @@ In fact, don't blame Hellerstein for any of this.
 
 Movie data from GroupLens Research is used to demonstrate the system's functionality. (https://grouplens.org/datasets/movielens/)
 
+# Project Structure  
+
+When a user issues a query, the QueryPlanner uses a Tokenizer to parse the query.  
+The Tokenizer stores tokens in a TokenTree.  
+Based on the contents of the TokenTree, the QueryPlanner builds a pipeline of PlanNodes.  
+Each of the major SQL operators modeled in this project have their own PlanNode subclass.  For example, `SELECT * FROM test_data WHERE title EQUALS 'The Fall';` causes the QueryPlanner
+  to build a pipeline consisting of a `FileScan -> Selection -> Projection`. Different queries require different pipelines.  
+
 ## Dependencies for Running Locally
 * cmake >= 3.7
   * All OSes: [click here for installation instructions](https://cmake.org/install/)
