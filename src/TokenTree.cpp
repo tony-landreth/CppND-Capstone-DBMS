@@ -5,39 +5,39 @@
 
 TokenTree::TokenTree(std::string tkn) : token(tkn){};
 
-bool TokenTree::exist(){
-  return (token != "NOT FOUND");
-}
+bool TokenTree::exist() { return (token != "NOT FOUND"); }
 
 // Method for Testing
-std::vector<std::string> TokenTree::depthFirstSearch(std::vector<std::string> *v) {
+std::vector<std::string> TokenTree::depthFirstSearch(
+    std::vector<std::string> *v) {
   v->push_back(this->token);
 
-  for(int i = 0; i < this->children.size(); i++) {
+  for (int i = 0; i < this->children.size(); i++) {
     this->children[i].depthFirstSearch(v);
   }
 
   return *v;
 }
 
-std::vector<TokenTree*> TokenTree::fetchNode(std::string tkn, std::vector<TokenTree*> *v){
-  if( (this->token) == tkn) {
+std::vector<TokenTree *> TokenTree::fetchNode(std::string tkn,
+                                              std::vector<TokenTree *> *v) {
+  if ((this->token) == tkn) {
     v->push_back(this);
   }
 
-  for(int i = 0; i < this->children.size(); i++) {
+  for (int i = 0; i < this->children.size(); i++) {
     this->children[i].fetchNode(tkn, v);
   }
 
   return *v;
 }
 
-TokenTree* TokenTree::find(std::string token) {
-  std::vector<TokenTree*> tt;
-  TokenTree* notFound = new TokenTree("NOT FOUND");
+TokenTree *TokenTree::find(std::string token) {
+  std::vector<TokenTree *> tt;
+  TokenTree *notFound = new TokenTree("NOT FOUND");
   fetchNode(token, &tt);
 
-  if(tt.size() > 0){
+  if (tt.size() > 0) {
     return tt[0];
   } else {
     return notFound;
@@ -45,20 +45,18 @@ TokenTree* TokenTree::find(std::string token) {
 };
 
 // destructor
-TokenTree::~TokenTree(){
-  children.clear();
-};
+TokenTree::~TokenTree() { children.clear(); };
 
 // copy constructor
-TokenTree::TokenTree(const TokenTree &source){
+TokenTree::TokenTree(const TokenTree &source) {
   token = source.token;
   children.clear();
   children = source.children;
 };
 
 // copy assignment operator
-TokenTree &TokenTree::operator=(const TokenTree &source){
-  if (this == &source){
+TokenTree &TokenTree::operator=(const TokenTree &source) {
+  if (this == &source) {
     return *this;
   }
 
@@ -70,14 +68,14 @@ TokenTree &TokenTree::operator=(const TokenTree &source){
 };
 
 // move constructor
-TokenTree::TokenTree(TokenTree &&source){
+TokenTree::TokenTree(TokenTree &&source) {
   token = source.token;
   children = source.children;
 };
 
 // move assignment operator
-TokenTree &TokenTree::operator=(TokenTree &&source){
-  if (this == &source){
+TokenTree &TokenTree::operator=(TokenTree &&source) {
+  if (this == &source) {
     return *this;
   }
 
@@ -86,5 +84,4 @@ TokenTree &TokenTree::operator=(TokenTree &&source){
   children = source.children;
 
   return *this;
-};      
-
+};
