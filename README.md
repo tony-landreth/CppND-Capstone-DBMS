@@ -22,11 +22,12 @@ Movie data from GroupLens Research is used to demonstrate the system's functiona
 ## Basic Build Instructions
 
 1. Clone this repo, including the test submodule, like this: git clone --recurse-submodules https://github.com/tony-landreth/CppND-Capstone-DBMS.git
-2. Make a build directory in the top level directory: `mkdir build && cd build`
+2. Make a build directory in the top level directory: `mkdir build && cd build`  
 3. Compile: `cmake .. && make`
 
 ## Running It
-This is a read-only DBMS with very limited capabilities. The following lines will run:
+This is a read-only DBMS with very limited capabilities. Keep that in mind.
+Assuming that you're in the same directory as the executable (probably `build/`). The following lines will run:
 1. `./mildDBMS "SELECT * FROM movies;"`  
 2. `./mildDBMS "SELECT movies.title, ratings.rating FROM movies JOIN ratings ON movieId = movieId;"`  
 3. `./mildDBMS "SELECT movies.title, ratings.rating FROM movies JOIN ratings ON movieId = movieId WHERE title EQUALS 'Sudden Death (1995)';"`  
