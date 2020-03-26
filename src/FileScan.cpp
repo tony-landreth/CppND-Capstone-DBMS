@@ -33,7 +33,8 @@ std::vector<std::string> FileScan::next() {
   if(idx_for_next_ >= relation_->size()) {
     return empty_vector;
   }
-  std::vector<std::vector<std::string> > rows = *relation_.get();
+  std::vector<std::vector<std::string> > *rowsPtr = relation_.get();
+  std::vector<std::vector<std::string> > rows = *rowsPtr;
   std::vector<std::string> row = rows[idx_for_next_];
   idx_for_next_++;
 
