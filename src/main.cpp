@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   for(int i = 0; i < result->size(); i++) {
     std::vector<std::vector<std::string> > row = *result.get();
 
-    for(int j = 0; j < row[j].size(); j++) {
+    for(int j = 0; j < row[i].size(); j++) {
       std::string r = row[i][j];
       int rowLength = row[i].size();
     
