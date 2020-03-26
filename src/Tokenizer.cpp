@@ -158,8 +158,6 @@ TokenTree Tokenizer::tokenize(std::string str) {
   whr.token = "WHERE";
   jn.token = "JOIN";
 
-  // TODO: Figure out why semi-colon gets stripped from argv
-  // str = str + ";";
   std::istringstream tkn_stream(str);
   std::string tmp;
   std::vector<std::string> selectors;

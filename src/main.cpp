@@ -9,8 +9,6 @@
 
 using std::setw;
 
-// TODO: Use a Template Function for something
-
 int main(int argc, char** argv) {
   QueryPlanner qp = QueryPlanner(argc, argv);
   std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();

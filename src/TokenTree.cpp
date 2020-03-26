@@ -1,8 +1,5 @@
 #include "TokenTree.h"
 
-// TODO: Define a delete function that
-// TODO: deletes all of a TokenTree's children
-
 TokenTree::TokenTree(std::string tkn) : token(tkn){};
 
 bool TokenTree::exist() { return (token != "NOT FOUND"); }
