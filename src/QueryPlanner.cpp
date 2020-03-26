@@ -207,8 +207,6 @@ std::unique_ptr<std::vector<std::vector<std::string> > > QueryPlanner::run() {
     frontEndSelCols = projectionBins[0];
   }
 
-  // TODO: move this after jn check and join frontEndSelCols[0] and [1] if there
-  // is a 1
   std::unique_ptr<Selection> sel =
       std::make_unique<Selection>(where, std::move(rFs), schema);
 
