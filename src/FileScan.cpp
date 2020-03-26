@@ -3,7 +3,6 @@
 FileScan::FileScan(Schema sch) : schema_(sch){};
 
 
-//TODO: scanFile should run on init
 void FileScan::scanFile() {
   std::stringstream fileName;
   fileName << "../test/" << schema_.tableName << ".csv";
@@ -19,7 +18,7 @@ void FileScan::scanFile() {
   row = next_();
 
   while(row.size() > 0) {
-    relation_.push_back(row);
+    relation_->push_back(row);
     row = next_();
   }
 
@@ -31,14 +30,15 @@ void FileScan::scanFile() {
 std::vector<std::string> FileScan::next() {
   std::vector<std::string> empty_vector;
 
-  if(idx_for_next_ >= relation_.size()) {
+  if(idx_for_next_ >= relation_->size()) {
     return empty_vector;
   }
-
-  std::vector<std::string> row = relation_[idx_for_next_];
+  std::vector<std::vector<std::string> > *rowsPtr = relation_.get();
+  std::vector<std::vector<std::string> > rows = *rowsPtr;
+  std::vector<std::string> row = rows[idx_for_next_];
   idx_for_next_++;
 
-  return row;
+  return std::move(row);
 }
 
 std::vector<std::string> FileScan::next_() {

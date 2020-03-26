@@ -148,10 +148,11 @@ void QueryPlanner::detectClauses(){
 
 // As you traverse the tree, build a pipeline of PlanNodes
 // returning a single node on which you can call next()
-std::vector<std::vector<std::string> > QueryPlanner::run()
+std::unique_ptr<std::vector<std::vector<std::string> > > QueryPlanner::run()
 {
   std::vector<std::string> badQueryMsg{ "You have not submitted a valid query.", "The minimal query has the form SELECT * FROM table_name;" };
-  std::vector<std::vector<std::string> > results;
+
+  std::unique_ptr<std::vector<std::vector<std::string> > > results = std::make_unique<std::vector<std::vector<std::string> > >();
   std::vector<std::string> row;
   tokenTree_ = tokenize();
   std::vector<std::string> where;
@@ -162,8 +163,8 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
   // Handle commands missing the minimal data to issue a query
   bool badQuery = ( !frmPresent_ || !selPresent_ || (queryData_["FROM"].size() > 1));
   if(badQuery){
-    results.push_back(badQueryMsg);
-    return results;
+    results->push_back(badQueryMsg);
+    return std::move(results);
   }
 
   // Build rFileScan Node
@@ -256,16 +257,16 @@ std::vector<std::vector<std::string> > QueryPlanner::run()
       row = sansForeignKeys->next();
 
       if(row.size() > 0) {
-        results.push_back(row);
+        results->push_back(row);
       }
     }
   } else {
     for(int i = 0; i < frmTableSize; i++){
       row = prjR->next();
       if(row.size() > 0)
-        results.push_back(row);
+        results->push_back(row);
     }
   }
 
-  return results;
+  return std::move(results);
 };

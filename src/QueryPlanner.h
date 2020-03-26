@@ -25,7 +25,7 @@ class QueryPlanner{
     // Method declarations
     QueryPlanner(){};
     QueryPlanner(int argc, char** argv);
-    std::vector<std::vector<std::string> > run();
+    std::unique_ptr<std::vector<std::vector<std::string> > > run();
     std::vector<std::vector<std::string> > binProjectionKeys(std::vector<std::string> prjKeys);
     std::vector<std::vector<std::string> > buildFrontEndColumnNames(std::vector<std::string> columnNames, Schema schema);
 

@@ -344,8 +344,8 @@ TEST_F(QueryPlannerTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-  EXPECT_EQ(result, expectedResult);
+  std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
+  EXPECT_EQ(*result, expectedResult);
 }
 
 class QueryWithProjectionTest : public ::testing::Test {
@@ -369,9 +369,8 @@ TEST_F(QueryWithProjectionTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-
-  EXPECT_EQ(result, expectedResult);
+  std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
+  EXPECT_EQ(*result, expectedResult);
 }
 
 class ComplexQueryTest : public ::testing::Test {
@@ -388,9 +387,8 @@ TEST_F(ComplexQueryTest, Run) {
 
   QueryPlanner qp(argv.size() - 1, argv.data());
   std::vector<std::vector<std::string> > expectedResult{ { "title" }, { "The Fall" } };
-  std::vector<std::vector<std::string> > result = qp.run();
-
-  EXPECT_EQ(result, expectedResult);
+  std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
+  EXPECT_EQ(*result, expectedResult);
 }
 
 // A self join occurs when the two contributing nodes to the join are read from the
@@ -414,9 +412,8 @@ TEST_F(SelfJoinQueryTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-
-  EXPECT_EQ(result, expectedResult);
+  std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
+  EXPECT_EQ(*result, expectedResult);
 }
 
 class SelfJoinProjectionWhereQueryTest : public ::testing::Test {
@@ -436,9 +433,8 @@ TEST_F(SelfJoinProjectionWhereQueryTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-
-  EXPECT_EQ(result, expectedResult);
+  std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
+  EXPECT_EQ(*result, expectedResult);
 }
 
 class SelfJoinDotProjectionWhereQueryTest : public ::testing::Test {
@@ -458,9 +454,8 @@ TEST_F(SelfJoinDotProjectionWhereQueryTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-
-  EXPECT_EQ(result, expectedResult);
+  std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
+  EXPECT_EQ(*result, expectedResult);
 }
 
 class JoinDotProjectionQueryTest : public ::testing::Test {
@@ -480,8 +475,7 @@ TEST_F(JoinDotProjectionQueryTest, Run) {
   argv.push_back(nullptr);
 
   QueryPlanner qp(argv.size() - 1, argv.data());
-  std::vector<std::vector<std::string> > result = qp.run();
-
-  EXPECT_EQ(result, expectedResult);
+  std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
+  EXPECT_EQ(*result, expectedResult);
 }
 
