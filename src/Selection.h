@@ -1,8 +1,9 @@
 #ifndef SELECTION_H
 #define SELECTION_H
+#include <map>
+#include <string>
+
 #include "FileScan.h"
-#include<string>
-#include<map>
 
 /*
    Selection nodes process WHERE clauses in SELECT statements.
@@ -10,24 +11,24 @@
    will return only rows where movieId is equal to 3.
 */
 
-class Selection : public PlanNode
-{
-  public:
-    // Method declarations
-    Selection(const std::vector<std::string> keys, const std::unique_ptr<FileScan> fs, const Schema sch);
-    std::vector<std::string> next();
-    void rewind(){}; // presently used only on Projection nodes
+class Selection : public PlanNode {
+ public:
+  // Method declarations
+  Selection(const std::vector<std::string> keys,
+            const std::unique_ptr<FileScan> fs, const Schema sch);
+  std::vector<std::string> next();
+  void rewind(){};  // presently used only on Projection nodes
 
-    // Variable declarations
-    std::vector<std::string> keys;
+  // Variable declarations
+  std::vector<std::string> keys;
 
-  private:
-    // Method declarations
+ private:
+  // Method declarations
 
-    // Variable declarations
-    Schema schema_;
-    std::unique_ptr<FileScan> fs_;
-    int rowIdx_ = 0;
+  // Variable declarations
+  Schema schema_;
+  std::unique_ptr<FileScan> fs_;
+  int rowIdx_ = 0;
 };
 
 #endif

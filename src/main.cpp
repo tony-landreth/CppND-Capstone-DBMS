@@ -1,31 +1,32 @@
-#include "FileScan.h"
-#include "Selection.h"
-#include "Projection.h"
-#include "Join.h"
-#include "QueryPlanner.h"
-#include <sstream> 
 #include <iomanip>
+#include <sstream>
+
+#include "FileScan.h"
+#include "Join.h"
+#include "Projection.h"
+#include "QueryPlanner.h"
+#include "Selection.h"
 
 using std::setw;
 
-//TODO: Use a Template Function for something
+// TODO: Use a Template Function for something
 
 int main(int argc, char** argv) {
   QueryPlanner qp = QueryPlanner(argc, argv);
   std::unique_ptr<std::vector<std::vector<std::string> > > result = qp.run();
 
-  for(int i = 0; i < result->size(); i++) {
+  for (int i = 0; i < result->size(); i++) {
     std::vector<std::vector<std::string> > row = *result.get();
 
-    for(int j = 0; j < row[i].size(); j++) {
+    for (int j = 0; j < row[i].size(); j++) {
       std::string r = row[i][j];
       int rowLength = row[i].size();
-    
-      if(i == 0){
+
+      if (i == 0) {
         // Format header
         std::cout << r << setw(80) << std::right;
 
-        if(j == rowLength - 1){
+        if (j == rowLength - 1) {
           std::cout << std::left;
         }
       } else {
@@ -38,4 +39,3 @@ int main(int argc, char** argv) {
 
   return 0;
 }
-

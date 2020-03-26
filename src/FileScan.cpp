@@ -2,14 +2,13 @@
 
 FileScan::FileScan(Schema sch) : schema_(sch){};
 
-
 void FileScan::scanFile() {
   std::stringstream fileName;
   fileName << "../test/" << schema_.tableName << ".csv";
 
   fileStream_.open(fileName.str());
 
-  if(!fileStream_) {
+  if (!fileStream_) {
     std::cerr << "No table named " << schema_.tableName << std::endl;
     exit(1);
   }
@@ -17,7 +16,7 @@ void FileScan::scanFile() {
   std::vector<std::string> row;
   row = next_();
 
-  while(row.size() > 0) {
+  while (row.size() > 0) {
     relation_->push_back(row);
     row = next_();
   }
@@ -30,7 +29,7 @@ void FileScan::scanFile() {
 std::vector<std::string> FileScan::next() {
   std::vector<std::string> empty_vector;
 
-  if(idx_for_next_ >= relation_->size()) {
+  if (idx_for_next_ >= relation_->size()) {
     return empty_vector;
   }
   std::vector<std::vector<std::string> > *rowsPtr = relation_.get();
@@ -47,32 +46,32 @@ std::vector<std::string> FileScan::next_() {
   std::vector<std::string> result_row;
   std::vector<std::string> result;
 
-  if(fileStream_) {
+  if (fileStream_) {
     getline(fileStream_, row);
     std::stringstream ss(row);
 
-    // Split on commas (consider edge cases, e.g. quote escaped names with commas in them)
-    while( ss.good() ) {
+    // Split on commas (consider edge cases, e.g. quote escaped names with
+    // commas in them)
+    while (ss.good()) {
       std::string substr;
-      getline( ss, substr, ',' );
-      cols.push_back( substr );
+      getline(ss, substr, ',');
+      cols.push_back(substr);
     }
 
     // If an element has ", concat it with the next element
-    // If the next element does not have a ", concat the previous concat with the next element
+    // If the next element does not have a ", concat the previous concat with
+    // the next element
     std::string quoted_str;
     int size = cols.size();
 
-
-    for(int i = 0; i < size; i++) {
-      if(cols[i].find("\"") != std::string::npos) {
-
+    for (int i = 0; i < size; i++) {
+      if (cols[i].find("\"") != std::string::npos) {
         quoted_str = cols[i];
         i++;
 
-        while(true) {
+        while (true) {
           quoted_str = quoted_str + "," + cols[i];
-          if(cols[i].find("\"") != std::string::npos) {
+          if (cols[i].find("\"") != std::string::npos) {
             break;
           } else {
             i++;
@@ -86,7 +85,7 @@ std::vector<std::string> FileScan::next_() {
 
     // Remove \r from last entry in the row
     std::string lastEntry = result_row.back();
-    if(lastEntry.find("\r") != std::string::npos) {
+    if (lastEntry.find("\r") != std::string::npos) {
       int numCols = result_row.size() - 1;
       lastEntry.erase(lastEntry.size() - 1);
       result_row[numCols] = lastEntry;
@@ -95,6 +94,6 @@ std::vector<std::string> FileScan::next_() {
     return result_row;
   }
 
-  //Return empty vector if there's no data
+  // Return empty vector if there's no data
   return result;
 }
