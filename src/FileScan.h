@@ -35,7 +35,7 @@ class FileScan : public PlanNode
     // Variable declarations
     Schema schema_;
     int idx_for_next_;
-    std::vector<std::vector<std::string> > relation_;
+    std::unique_ptr<std::vector<std::vector<std::string> > > relation_ = std::make_unique<std::vector<std::vector<std::string> > >();
     std::ifstream fileStream_;
 };
 #endif

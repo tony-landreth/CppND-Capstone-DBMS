@@ -65,7 +65,7 @@ std::vector<std::string> Join::next() {
   int s_colID = foreignKeys_[1];
 
 
-  // If r is empty, return early
+  // If R is empty, return early
   if(r_row.size() == 0) {
     return result;
   }
