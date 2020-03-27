@@ -1,9 +1,6 @@
 # MildDBMS Repo
 
-This is a Capstone project for the [Udacity C++ Nanodegree Program](https://www.udacity.com/course/c-plus-plus-nanodegree--nd213).
-
-The project implements a database management system very loosely based on Joe Hellerstein’s databases course at UC Berkeley.
-In fact, don't blame Hellerstein for any of this.
+The is a hobby project, implementing a database management system very loosely based on Joe Hellerstein’s databases course at UC Berkeley. In fact, don't blame Hellerstein for any of this.
 
 Movie data from GroupLens Research is used to demonstrate the system's functionality. (https://grouplens.org/datasets/movielens/)
 
